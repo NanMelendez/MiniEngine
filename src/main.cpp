@@ -1,11 +1,8 @@
-// C++ standard libraries
-#include <iostream>
-#include <vector>
-
-// 3rd-party libraries
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+#include "../include/MiniEngine/pch.hpp"
+#include "../include/MiniEngine/core/vao.hpp"
+#include "../include/MiniEngine/core/vbo.hpp"
+#include "../include/MiniEngine/core/ebo.hpp"
+#include "../include/MiniEngine/core/shader.hpp"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -16,30 +13,14 @@ void processInput(GLFWwindow* window) {
         glfwSetWindowShouldClose(window, true);
 }
 
-const char* vtxSrc = ""
-"#version 330 core\n"
-"layout (location = 0) in vec3 position;\n"
-"layout (location = 1) in vec3 color;\n"
-"out vec3 vColor;\n"
-"void main() {\n"
-"   gl_Position = vec4(position, 1.0);\n"
-"   vColor = color;"
-"}\n";
-
-const char* frgSrc = ""
-"#version 330 core\n"
-"in vec3 vColor;\n"
-"out vec4 fColor;\n"
-"void main() {\n"
-"   fColor = vec4(vColor, 1.0);\n"
-"}\n";
-
 struct Vertex {
     glm::vec3 position;
     glm::vec3 color;
 };
 
 int main() {
+    using namespace MiniEngine;
+
     // Graphics libraries initialization
     // ----------------------------------
     if (!glfwInit()) {
@@ -68,41 +49,7 @@ int main() {
 
     // Shader setup
     // -------------
-    unsigned int vtxID, frgID;
-    vtxID = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vtxID, 1, &vtxSrc, NULL);
-    glCompileShader(vtxID);
-
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vtxID, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vtxID, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX_COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    frgID = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(frgID, 1, &frgSrc, NULL);
-    glCompileShader(frgID);
-
-    glGetShaderiv(frgID, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(frgID, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT_COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    unsigned int shaderID = glCreateProgram();
-    glAttachShader(shaderID, vtxID);
-    glAttachShader(shaderID, frgID);
-    glLinkProgram(shaderID);
-
-    glGetProgramiv(shaderID, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderID, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-    glDeleteShader(vtxID);
-    glDeleteShader(frgID);
+    Core::Shader shader("../assets/shaders/main.vert", "../assets/shaders/main.frag");
 
     // Additional setup
     // -----------------
@@ -112,31 +59,22 @@ int main() {
         {{ -0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f }}
     };
 
-    std::vector<unsigned int> indices = {
+    std::vector<u32> indices = {
         0, 1, 2
     };
 
-    unsigned int vaoID, vboID, eboID;
+    Core::VAO vao; vao.bind();
+    Core::VBO vbo(vertices.size() * sizeof(Vertex), vertices.data()); vbo.bind();
+    Core::EBO ebo(indices.size() * sizeof(u32), indices.data()); ebo.bind();
 
-    glGenVertexArrays(1, &vaoID);
-    glBindVertexArray(vaoID);
+    vao.setAttribPointer(0, 3, sizeof(Vertex), (void*)offsetof(Vertex, position));
+    vao.enableIndex(0);
+    vao.setAttribPointer(1, 3, sizeof(Vertex), (void*)offsetof(Vertex, color));
+    vao.enableIndex(1);
 
-    glGenBuffers(1, &vboID);
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
-
-    glGenBuffers(1, &eboID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    vao.unbind();
+    vbo.unbind();
+    ebo.unbind();
 
     // Core loop
     // ----------
@@ -145,9 +83,10 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderID);
+        // glUseProgram(shaderID);
+        shader.use();
 
-        glBindVertexArray(vaoID);
+        vao.bind();
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
