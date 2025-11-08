@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __MINIENGINE_CORE_BASEOBJECT__
-#define __MINIENGINE_CORE_BASEOBJECT__
+#ifndef __MINIENGINE_CORE_BASE_OBJECT__
+#define __MINIENGINE_CORE_BASE_OBJECT__
 
 #include "../pch.hpp"
 #include "../extras/types.hpp"

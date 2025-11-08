@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __MINIENGINE_CORE_SHADERPROGRAM__
-#define __MINIENGINE_CORE_SHADERPROGRAM__
+#ifndef __MINIENGINE_CORE_SHADER_PROGRAM__
+#define __MINIENGINE_CORE_SHADER_PROGRAM__
 
 #include "coreBaseObject.hpp"
 

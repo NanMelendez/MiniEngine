@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __MINIENGINE_CORE_VERTEXARRAYOBJECT__
-#define __MINIENGINE_CORE_VERTEXARRAYOBJECT__
+#ifndef __MINIENGINE_CORE_VERTEX_ARRAY_OBJECT__
+#define __MINIENGINE_CORE_VERTEX_ARRAY_OBJECT__
 
 #include "coreContainer.hpp"
 

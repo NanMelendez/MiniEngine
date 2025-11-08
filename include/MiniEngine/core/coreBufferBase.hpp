@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __MINIENGINE_CORE_BUFFERBASE__
-#define __MINIENGINE_CORE_BUFFERBASE__
+#ifndef __MINIENGINE_CORE_BUFFER_BASE__
+#define __MINIENGINE_CORE_BUFFER_BASE__
 
 #include "coreContainer.hpp"
 
