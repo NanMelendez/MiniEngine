@@ -9,6 +9,8 @@
 namespace MiniEngine {
     class Scene {
     public:
+        std::string name;
+        
         u32 getID() const { return id; }
 
     private:

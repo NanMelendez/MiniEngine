@@ -7,9 +7,9 @@
 
 namespace MiniEngine {
     namespace Core {
-        class Container : public Object {
+        class GLContainer : public Object {
         public:
-            Container() : Object() {}
+            GLContainer() : Object() {}
             
             virtual void bind() const = 0;
 

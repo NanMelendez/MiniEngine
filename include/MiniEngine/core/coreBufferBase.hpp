@@ -7,9 +7,9 @@
 
 namespace MiniEngine {
     namespace Core {
-        class Buffer : public Container {
+        class Buffer : public GLContainer {
         public:
-            Buffer() : Container() {}
+            Buffer() : GLContainer() {}
 
             virtual void load(GLsizeiptr size, const GLvoid* data) = 0;
 

@@ -7,9 +7,9 @@
 
 namespace MiniEngine {
     namespace Core {
-        class VAO : public Container {
+        class VAO : public GLContainer {
         public:
-            VAO() : Container() { load(); }
+            VAO() : GLContainer() { load(); }
 
             void bind() const override {
                 glBindVertexArray(id);

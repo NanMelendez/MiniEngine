@@ -6,6 +6,8 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include <glad/glad.h>

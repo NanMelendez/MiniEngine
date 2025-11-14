@@ -5,6 +5,7 @@
 
 #include "windowbase.hpp"
 #include "glcontext.hpp"
+#include "../scene/scenemanager.hpp"
 
 namespace MiniEngine {
     namespace Window {
@@ -96,6 +97,8 @@ namespace MiniEngine {
         private:
             GLFWwindow* window;
             GLContext* renderCtx;
+
+
         };
     }
 }
