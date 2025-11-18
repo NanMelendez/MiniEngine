@@ -20,7 +20,7 @@
 // };
 
 int main() {
-    MiniEngine::Application* app = new MiniEngine::Application(800, 600, "MiniEngine [ALPHA]");
+    std::unique_ptr<MiniEngine::Application> app = std::make_unique<MiniEngine::Application>(800, 600, "MiniEngine [ALPHA]");
 
     app->run();
     

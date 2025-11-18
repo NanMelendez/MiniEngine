@@ -22,10 +22,14 @@ namespace MiniEngine {
             return names;
         }
 
-        std::shared_ptr<Scene> loadScene(const std::string& name) {
+        std::shared_ptr<Scene> getCurrentScene(const std::string& name) {
             auto temp = scenes.find(name);
             
             return temp != scenes.end() ? temp->second : nullptr;
+        }
+
+        void loadScene(const std::string& name) {
+            auto temp = scenes.find(name);
         }
 
     private:
