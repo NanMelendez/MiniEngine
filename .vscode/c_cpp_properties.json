@@ -3,7 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "C:\\dependencies\\c++\\include"
+                "${workspaceFolder}/include"
             ],
             "defines": [
                 "_DEBUG",

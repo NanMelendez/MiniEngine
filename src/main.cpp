@@ -3,7 +3,7 @@
 // #include "../include/MiniEngine/core/vbo.hpp"
 // #include "../include/MiniEngine/core/ebo.hpp"
 // #include "../include/MiniEngine/core/shader.hpp"
-#include "../include/MiniEngine/app.hpp"
+#include "MiniEngine/app.hpp"
 
 // void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 //     glViewport(0, 0, width, height);

@@ -8,8 +8,8 @@
 			"args": [
 				"-fdiagnostics-color=always",
 				"-std=c++20",
-				"-IC:\\dependencies\\c++\\include",
-				"-LC:\\dependencies\\c++\\lib",
+				"-I${workspaceFolder}/include",
+				"-L${workspaceFolder}/lib",
 				"-g",
 				"${workspaceFolder}/src/\\*.cpp",
 				"${workspaceFolder}/src/\\*.c",
