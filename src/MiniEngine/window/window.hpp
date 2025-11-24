@@ -5,7 +5,7 @@
 
 #include "windowbase.hpp"
 #include "glcontext.hpp"
-#include "../scene/scenemanager.hpp"
+#include "../scene/scene.hpp"
 
 namespace MiniEngine {
     namespace Window {
@@ -27,6 +27,8 @@ namespace MiniEngine {
 
                 renderCtx->init(this);
                 renderCtx->setIcon("../assets/textures/miniengine_logo.png");
+
+                scene = std::make_unique<Scene>();
 
                 return isRunning();
             }
@@ -98,7 +100,7 @@ namespace MiniEngine {
             GLFWwindow* window;
             GLContext* renderCtx;
 
-
+            std::unique_ptr<Scene> scene;
         };
     }
 }
