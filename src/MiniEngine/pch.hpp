@@ -4,9 +4,11 @@
 #define __MINIENGINE_PRECOMPILED_HEADERS__
 
 #include <fstream>
-#include <string>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <string_view>
+#include <typeinfo>
 #include <unordered_map>
 #include <vector>
 

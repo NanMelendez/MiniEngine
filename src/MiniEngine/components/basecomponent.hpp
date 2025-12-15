@@ -77,9 +77,13 @@ namespace MiniEngine {
                 return name + " (" + className() + ')';
             }
 
+            static void destroy(std::shared_ptr<Base> object) {
+                // ...
+            }
+
         protected:
             virtual std::string className() const {
-                return name + " (Base)";
+                return "Base";
             };
         };
     }
