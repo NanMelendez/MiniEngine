@@ -7,23 +7,23 @@
 
 namespace MiniEngine {
     namespace Core {
-        class EBO : public Buffer {
+        class EBO final : public GLBuffer {
         public:
-            EBO() : Buffer() {}
+            EBO() : GLBuffer() {}
 
             EBO(GLsizeiptr size, const GLvoid* data, GLenum usage = GL_STATIC_DRAW) {
                 load(size, data, usage);
             }
 
-            void bind() const {
+            void bind() const override final {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
             }
 
-            void unbind() const {
+            void unbind() const override final {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             }
 
-            void load(GLsizeiptr size, const GLvoid* data) override {
+            void load(GLsizeiptr size, const GLvoid* data) override final {
                 load(size, data, GL_STATIC_DRAW);
             }
 

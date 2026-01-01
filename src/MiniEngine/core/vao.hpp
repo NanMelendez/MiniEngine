@@ -7,15 +7,15 @@
 
 namespace MiniEngine {
     namespace Core {
-        class VAO : public GLContainer {
+        class VAO final : public GLContainer {
         public:
             VAO() : GLContainer() { load(); }
 
-            void bind() const override {
+            void bind() const override final {
                 glBindVertexArray(id);
             }
 
-            void unbind() const override {
+            void unbind() const override final {
                 glBindVertexArray(0);
             }
 
@@ -24,7 +24,7 @@ namespace MiniEngine {
                 glGenVertexArrays(1, &id);
             }
 
-            void clear() override {
+            void clear() override final {
                 if (id) {
                     glDeleteVertexArrays(1, &id);
                     id = 0;

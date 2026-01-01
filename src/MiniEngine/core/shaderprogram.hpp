@@ -7,11 +7,11 @@
 
 namespace MiniEngine {
     namespace Core {
-        class Shader : public Object {
+        class ShaderProgram final : public GLObject {
         public:
-            Shader() {}
+            ShaderProgram() {}
 
-            Shader(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath = "") { load(vertexPath, fragmentPath, geometryPath); }
+            ShaderProgram(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath = "") { load(vertexPath, fragmentPath, geometryPath); }
 
             void use() const {
                 glUseProgram(id);
@@ -84,7 +84,7 @@ namespace MiniEngine {
                     glDeleteShader(geoID);
             }
 
-            void clear() override {
+            void clear() override final {
                 if (id) {
                     glDeleteProgram(id);
                     id = 0;

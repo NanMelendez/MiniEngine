@@ -8,13 +8,14 @@
 
 namespace MiniEngine {
     namespace Core {
-        class Object {
+        class GLObject {
         public:
-            Object() {}
+            GLObject() {}
 
             u32 getID() const { return id; }
 
             virtual void clear() = 0;
+            
         protected:
             u32 id = 0;
         };
