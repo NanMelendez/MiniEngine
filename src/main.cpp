@@ -70,6 +70,7 @@ int main() {
 
         // glUseProgram(program);
         mainShader.use();
+        mainShader.setVec3("myColor", glm::vec3(1.0f, 0.5f, 0.2f));
        
         vao.bind();
         glDrawElements(GL_TRIANGLES, ebo.getCount(), GL_UNSIGNED_INT, 0);

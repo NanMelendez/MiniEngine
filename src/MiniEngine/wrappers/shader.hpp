@@ -69,6 +69,54 @@ namespace MiniEngine {
             }
         }
 
+        void setBool(std::string_view name, bool value) const {
+            glUniform1i(getUniformLocation(name), value);
+        }
+
+        void setInt(std::string_view name, i32 value) const {
+            glUniform1i(getUniformLocation(name), value);
+        }
+
+        void setFloat(std::string_view name, f32 value) const {
+            glUniform1f(getUniformLocation(name), value);
+        }
+
+        void setVec2(std::string_view name, f32 x, f32 y) const {
+            glUniform2f(getUniformLocation(name), x, y);
+        }
+
+        void setVec2(std::string_view name, const glm::vec2& value) const {
+            glUniform2fv(getUniformLocation(name), 1, glm::value_ptr(value));
+        }
+
+        void setVec3(std::string_view name, f32 x, f32 y, f32 z) const {
+            glUniform3f(getUniformLocation(name), x, y, z);
+        }
+
+        void setVec3(std::string_view name, const glm::vec3& value) const {
+            glUniform3fv(getUniformLocation(name), 1, glm::value_ptr(value));
+        }
+
+        void setVec4(std::string_view name, f32 x, f32 y, f32 z, f32 w) const {
+            glUniform4f(getUniformLocation(name), x, y, z, w);
+        }
+
+        void setVec4(std::string_view name, const glm::vec4& value) const {
+            glUniform4fv(getUniformLocation(name), 1, glm::value_ptr(value));
+        }
+
+        void setMat2(std::string_view name, const glm::mat2& mat) const {
+            glUniformMatrix2fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
+        }
+
+        void setMat3(std::string_view name, const glm::mat3& mat) const {
+            glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
+        }
+
+        void setMat4(std::string_view name, const glm::mat4& mat) const {
+            glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
+        }
+
     private:
         u32 createShader(GLenum type, const i8* src) const {
             u32 shaderID = glCreateShader(type);
@@ -105,6 +153,10 @@ namespace MiniEngine {
                 glGetProgramInfoLog(id, maxLogLength, &maxLogLength, &infoLog[0]);
                 std::cerr << "ERROR::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
             }
+        }
+
+        GLuint getUniformLocation(std::string_view name) const {
+            return glGetUniformLocation(id, name.data());
         }
     };
 }
