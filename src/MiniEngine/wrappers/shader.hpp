@@ -117,6 +117,10 @@ namespace MiniEngine {
             glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
         }
 
+        void setSampler2D(std::string_view name, u32 slot) const {
+            glUniform1i(getUniformLocation(name), slot);
+        }
+
     private:
         u32 createShader(GLenum type, const i8* src) const {
             u32 shaderID = glCreateShader(type);
