@@ -111,10 +111,10 @@ int main() {
 
     Mesh mesh = Prefabs::cube(Transform());
     Transform transform;
-    Texture2D texDiffuse(load2DImage("../assets/textures/container2.png"));
-    Texture2D texSpecular(load2DImage("../assets/textures/container2_specular.png"));
-    Texture2D texEmissive(load2DImage("../assets/textures/matrix.jpg"));
-    MiniEngine::ShaderProgram mainShader("../assets/shaders/main.vert", "../assets/shaders/main.frag");
+    Texture2D texDiffuse = Loader<Texture2D>::load("../assets/textures/container2.png");
+    Texture2D texSpecular = Loader<Texture2D>::load("../assets/textures/container2_specular.png");
+    Texture2D texEmissive = Loader<Texture2D>::load("../assets/textures/matrix.jpg");
+    ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/main.frag");
 
     LightSource light(
         new Transform(glm::vec3(1.2f, 1.0f, 2.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
@@ -122,7 +122,7 @@ int main() {
         glm::vec3(0.5f),
         glm::vec3(1.0f)
     );
-    MiniEngine::ShaderProgram lightSrcShader("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
+    ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
     
     // Core loop
     while (!glfwWindowShouldClose(window)) {

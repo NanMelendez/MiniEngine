@@ -15,15 +15,24 @@ namespace MiniEngine {
         public:
             BaseTexture() {}
 
+            BaseTexture(const BaseTexture&) = delete;
+            BaseTexture& operator=(const BaseTexture&) = delete;
+
+            BaseTexture(BaseTexture&&) noexcept = default;
+            BaseTexture& operator=(BaseTexture&&) noexcept = default;
+
             ~BaseTexture() {
                 clearImageData();
+                clear();
             }
 
             virtual void setTextureParameter(GLenum name, const GLint param) const = 0;
-
+            
+            /*
             virtual void load(const ImageData& imData, const std::vector<std::pair<GLenum, GLint>>& params) = 0;
 
             virtual void reload(const ImageData& imData, const std::vector<std::pair<GLenum, GLint>>& params) = 0;
+            */
 
             void clear() override final {
                 if (isAllocated()) {
