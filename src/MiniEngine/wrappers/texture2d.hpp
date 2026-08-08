@@ -39,7 +39,7 @@ namespace MiniEngine {
     template<>
     class Loader<Texture2D> {
     public:
-        static Texture2D load(const std::string& path, bool flipVertically = false, const std::vector<std::pair<GLenum, GLint>>& params = {{GL_TEXTURE_WRAP_S, GL_LINEAR}, {GL_TEXTURE_WRAP_T, GL_LINEAR}, {GL_TEXTURE_MIN_FILTER, GL_REPEAT}, {GL_TEXTURE_MAG_FILTER, GL_REPEAT}}) {
+        static Texture2D load(std::string_view path, bool flipVertically = false, const std::vector<std::pair<GLenum, GLint>>& params = {{GL_TEXTURE_WRAP_S, GL_LINEAR}, {GL_TEXTURE_WRAP_T, GL_LINEAR}, {GL_TEXTURE_MIN_FILTER, GL_REPEAT}, {GL_TEXTURE_MAG_FILTER, GL_REPEAT}}) {
             Texture2D texture;
 
             glGenTextures(1, &texture.id);
@@ -49,7 +49,7 @@ namespace MiniEngine {
             return texture;
         }
 
-        static void reload(Texture2D& texture, const std::string& path, bool flipVertically = false, const std::vector<std::pair<GLenum, GLint>>& params = {{GL_TEXTURE_WRAP_S, GL_LINEAR}, {GL_TEXTURE_WRAP_T, GL_LINEAR}, {GL_TEXTURE_MIN_FILTER, GL_REPEAT}, {GL_TEXTURE_MAG_FILTER, GL_REPEAT}}) {
+        static void reload(Texture2D& texture, std::string_view path, bool flipVertically = false, const std::vector<std::pair<GLenum, GLint>>& params = {{GL_TEXTURE_WRAP_S, GL_LINEAR}, {GL_TEXTURE_WRAP_T, GL_LINEAR}, {GL_TEXTURE_MIN_FILTER, GL_REPEAT}, {GL_TEXTURE_MAG_FILTER, GL_REPEAT}}) {
             texture.clearImageData();
 
             texture.imData = fetchImageData(path, flipVertically);
@@ -80,10 +80,10 @@ namespace MiniEngine {
         }
         
         private:
-            static Core::ImageData fetchImageData(const std::string& path, bool flipVertically) {
+            static Core::ImageData fetchImageData(std::string_view path, bool flipVertically) {
                 Core::ImageData imData;
                 stbi_set_flip_vertically_on_load(flipVertically);
-                imData.data = stbi_load(path.c_str(), &imData.width, &imData.height, &imData.nChannels, 0);
+                imData.data = stbi_load(std::string(path).c_str(), &imData.width, &imData.height, &imData.nChannels, 0);
 
                 if (imData.data == nullptr) {
                     std::cerr << "Failed to load texture at \"" << path << "\"" << std::endl;
