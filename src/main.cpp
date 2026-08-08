@@ -6,6 +6,7 @@
 #include "MiniEngine/wrappers/texture2d.hpp"
 #include "MiniEngine/world/camera.hpp"
 #include "MiniEngine/extras/time.hpp"
+#include "MiniEngine/world/light.hpp"
 using namespace MiniEngine;
 
 Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)));
@@ -181,8 +182,14 @@ int main() {
     ebo.unbind();
 
     Transform transform;
-    Transform lightSrcTransform = Transform(glm::vec3(1.2f, 1.0f, 2.0f), glm::identity<glm::quat>(), glm::vec3(0.2f));
 
+    LightSource light(
+        new Transform(glm::vec3(1.2f, 1.0f, 2.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
+        glm::vec3(0.2f),
+        glm::vec3(0.5f),
+        glm::vec3(1.0f)
+    );
+    
     MiniEngine::ShaderProgram mainShader("../assets/shaders/main.vert", "../assets/shaders/main.frag");
     MiniEngine::ShaderProgram lightSrcShader("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
 
@@ -190,10 +197,6 @@ int main() {
     Texture2D texSpecular(load2DImage("../assets/textures/container2_specular.png"));
     Texture2D texEmissive(load2DImage("../assets/textures/matrix.jpg"));
     
-    glm::vec3 lightAmbient = glm::vec3(0.2f);
-    glm::vec3 lightDiffuse = glm::vec3(0.5f);
-    glm::vec3 lightSpecular = glm::vec3(1.0f);
-
     // Core loop
     while (!glfwWindowShouldClose(window)) {
         Time::update();
@@ -212,12 +215,26 @@ int main() {
         mainShader.setMat4("V", mainCamera->transform->view());
         mainShader.setMat4("M", M);
         mainShader.setMat3("mN", glm::mat3(glm::transpose(glm::inverse(M))));
-        mainShader.setVec3("light.position", lightSrcTransform.position);
-        mainShader.setVec3("light.ambient", lightAmbient);
-        mainShader.setVec3("light.diffuse", lightDiffuse);
-        mainShader.setVec3("light.specular", lightSpecular);
-        mainShader.setVec3("viewPos", mainCamera->transform->position);
+        /*
+        mainShader.setVec3("light.position", light.transform->position);
+        mainShader.setVec3("light.ambient", light.ambient);
+        mainShader.setVec3("light.diffuse", light.diffuse);
+        mainShader.setVec3("light.specular", light.specular);
+        */
+        mainShader.setVec3("camera.position", mainCamera->transform->position);
         mainShader.setFloat("time", Time::current());
+
+        mainShader.setInt("lights[0].type", static_cast<i32>(light.type));
+        mainShader.setVec3("lights[0].position", light.transform->position);
+        mainShader.setVec3("lights[0].direction", light.direction());
+        mainShader.setVec3("lights[0].ambient", light.ambient);
+        mainShader.setVec3("lights[0].diffuse", light.diffuse);
+        mainShader.setVec3("lights[0].specular", light.specular);
+        mainShader.setFloat("lights[0].constant", light.constant);
+        mainShader.setFloat("lights[0].linear", light.linear);
+        mainShader.setFloat("lights[0].quadratic", light.quadratic);
+        mainShader.setFloat("lights[0].cutOff", light.cutOff());
+        mainShader.setFloat("lights[0].outerCutOff", light.outerCutOff());
 
         texDiffuse.bind(0);
         mainShader.setSampler2D("material.diffuse", 0);
@@ -234,13 +251,13 @@ int main() {
         vao.bind();
         glDrawElements(GL_TRIANGLES, ebo.getCount(), GL_UNSIGNED_INT, 0);
 
-        M = lightSrcTransform.model();
+        M = light.transform->model();
 
         lightSrcShader.use();
         lightSrcShader.setMat4("P", mainCamera->projection(800, 600));
         lightSrcShader.setMat4("V", mainCamera->transform->view());
         lightSrcShader.setMat4("M", M);
-        lightSrcShader.setVec3("lightColor", lightAmbient);
+        lightSrcShader.setVec3("lightColor", light.ambient);
 
         vao.bind();
         glDrawElements(GL_TRIANGLES, ebo.getCount(), GL_UNSIGNED_INT, 0);

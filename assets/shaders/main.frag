@@ -1,5 +1,10 @@
 #version 330 core
 
+#define MAX_LIGHT_SOURCES 24
+#define LIGHT_TYPE_DIRECTIONAL 0
+#define LIGHT_TYPE_POINT       1
+#define LIGHT_TYPE_SPOT        2
+
 in SHADER_DATA {
     vec3 position;
     vec3 normal;
@@ -17,23 +22,99 @@ struct Material {
 };
 
 struct Light {
+    int lightType;
+
     vec3 position;
+    vec3 direction;
 
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    float constant;
+    float linear;
+    float quadratic;
+
+    float cutOff;
+    float outerCutOff;
+};
+
+struct Camera {
+    vec3 position;
+    float zNear;
+    float zFar;
 };
 
 uniform Material material;
-uniform Light light;
-uniform vec3 viewPos;
+uniform Light lights[MAX_LIGHT_SOURCES];
+uniform Camera camera;
 uniform float time;
 
 float grayscale(vec3 color) {
     return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
 }
 
+vec3 calcDirectionalLights(Light light, vec3 normal, vec3 viewDir) {
+    vec3 lightDir = normalize(-light.direction);
+    
+    float diff = max(dot(normal, lightDir), 0.0);
+
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+
+    vec3 ambient = light.ambient * vec3(texture(material.diffuse, data.uv));
+    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, data.uv));
+    vec3 specular = light.specular * spec * vec3(texture(material.specular, data.uv));
+
+    return ambient + diffuse + specular;
+}
+
+vec3 calcPointLights(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
+    vec3 lightDir = normalize(light.position - fragPos);
+
+    float diff = max(dot(normal, lightDir), 0.0);
+
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+
+    float dist = length(light.position - fragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * pow(dist, 2.0));
+
+    vec3 ambient = light.ambient * vec3(texture(material.diffuse, data.uv));
+    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, data.uv));
+    vec3 specular = light.specular * spec * vec3(texture(material.specular, data.uv));
+
+    return ambient + diffuse + specular;
+}
+
+vec3 calcSpotLights(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
+    vec3 lightDir = normalize(light.position - fragPos);
+
+    float diff = max(dot(normal, lightDir), 0.0);
+
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+
+    float dist = length(light.position - fragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * pow(dist, 2.0));
+
+    float theta = dot(lightDir, normalize(-light.direction));
+    float epsilon = light.cutOff - light.outerCutOff;
+    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+
+    vec3 ambient = light.ambient * vec3(texture(material.diffuse, data.uv));
+    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, data.uv));
+    vec3 specular = light.specular * spec * vec3(texture(material.specular, data.uv));
+
+    ambient *= attenuation * intensity;
+    diffuse *= attenuation * intensity;
+    specular *= attenuation * intensity;
+
+    return ambient + diffuse + specular;
+}
+
 void main() {
+    /*
     // Ambient
     vec3 ambient = light.ambient * texture(material.diffuse, data.uv).rgb;
 
@@ -53,6 +134,20 @@ void main() {
     vec3 emissive = texture(material.emissive, data.uv).rgb * material.emissiveStrenght * (0.5 + 0.5 + sin(time * 2.0));
 
     vec3 result = ambient + diffuse + specular + mix(emissive, vec3(0.0), ceil(grayscale(texture(material.specular, data.uv).rgb)));
+    */
+    vec3 norm = normalize(data.normal);
+    vec3 viewDir = normalize(camera.position - data.position);
+
+    vec3 result = vec3(0.0);
+
+    for (int i = 0; i < MAX_LIGHT_SOURCES; i++) {
+        if (lights[i].lightType == LIGHT_TYPE_DIRECTIONAL)
+            result += calcDirectionalLights(lights[i], norm, viewDir);
+        if (lights[i].lightType == LIGHT_TYPE_POINT)
+            result += calcPointLights(lights[i], norm, data.position, viewDir);
+        if (lights[i].lightType == LIGHT_TYPE_SPOT)
+            result += calcSpotLights(lights[i], norm, data.position, viewDir);
+    }
 
     fColor = vec4(result, 1.0);
 }
