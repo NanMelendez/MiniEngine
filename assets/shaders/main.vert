@@ -13,10 +13,11 @@ out SHADER_DATA {
 uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
+uniform mat3 mN;
 
 void main() {
     data.position = vec3(M * vec4(position, 1.0));
-    data.normal = normal;
+    data.normal = mN * normal;
     data.uv = uv;
 
     gl_Position = P * V * vec4(data.position, 1.0);

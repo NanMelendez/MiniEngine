@@ -108,16 +108,61 @@ int main() {
     }
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     // Variables
     std::vector<f32> vertices = {
-         0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-         0.0f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.5f, 1.0f,
-        -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f
+        // Up
+         0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,   1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,   0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,   0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,   1.0f, 0.0f,
+        // Down
+         0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,   1.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,   0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,   1.0f, 0.0f,
+        // Left
+        -0.5f,  0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+        // Right
+         0.5f,  0.5f, -0.5f,    1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,    1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,    1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,    1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+        // Front
+         0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,   1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,   0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,   1.0f, 0.0f,
+        // Back
+        -0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,   1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,   0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,   0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,   1.0f, 0.0f,
     };
 
     std::vector<u32> indices = {
-        0, 1, 2
+        // Up
+         0,  1,  3,
+         1,  2,  3,
+        // Down
+         4,  5,  7,
+         5,  6,  7,
+        // Left
+         8,  9, 11,
+         9, 10, 11,
+        // Right
+        12, 13, 15,
+        13, 14, 15,
+        // Front
+        16, 17, 19,
+        17, 18, 19,
+        // Back
+        20, 21, 23,
+        21, 22, 23
     };
     
     MiniEngine::VAO vao(true); vao.bind();
@@ -136,10 +181,18 @@ int main() {
     ebo.unbind();
 
     Transform transform;
+    Transform lightSrcTransform = Transform(glm::vec3(1.2f, 1.0f, 2.0f), glm::identity<glm::quat>(), glm::vec3(0.2f));
 
     MiniEngine::ShaderProgram mainShader("../assets/shaders/main.vert", "../assets/shaders/main.frag");
+    MiniEngine::ShaderProgram lightSrcShader("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
 
-    Texture2D myTex(load2DImage("../assets/textures/wall.jpg"));
+    Texture2D texDiffuse(load2DImage("../assets/textures/container2.png"));
+    Texture2D texSpecular(load2DImage("../assets/textures/container2_specular.png"));
+    Texture2D texEmissive(load2DImage("../assets/textures/matrix.jpg"));
+    
+    glm::vec3 lightAmbient = glm::vec3(0.2f);
+    glm::vec3 lightDiffuse = glm::vec3(0.5f);
+    glm::vec3 lightSpecular = glm::vec3(1.0f);
 
     // Core loop
     while (!glfwWindowShouldClose(window)) {
@@ -150,17 +203,45 @@ int main() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        transform.rotate(glm::quat(glm::vec3(0.0f, 0.02f, 0.0f)));
+        transform.rotate(glm::angleAxis(0.025f, glm::normalize(glm::vec3(0.25f, 1.0f, -0.5f))));
+
+        glm::mat4 M = transform.model();
         
         mainShader.use();
-        mainShader.setVec3("myColor", glm::vec3(1.0f, 0.5f, 0.2f));
         mainShader.setMat4("P", mainCamera->projection(800, 600));
         mainShader.setMat4("V", mainCamera->transform->view());
-        mainShader.setMat4("M", transform.model());
+        mainShader.setMat4("M", M);
+        mainShader.setMat3("mN", glm::mat3(glm::transpose(glm::inverse(M))));
+        mainShader.setVec3("light.position", lightSrcTransform.position);
+        mainShader.setVec3("light.ambient", lightAmbient);
+        mainShader.setVec3("light.diffuse", lightDiffuse);
+        mainShader.setVec3("light.specular", lightSpecular);
+        mainShader.setVec3("viewPos", mainCamera->transform->position);
+        mainShader.setFloat("time", Time::current());
 
-        myTex.bind(0);
-        mainShader.setSampler2D("myTex", 0);
+        texDiffuse.bind(0);
+        mainShader.setSampler2D("material.diffuse", 0);
+
+        texSpecular.bind(1);
+        mainShader.setSampler2D("material.specular", 1);
+
+        texEmissive.bind(2);
+        mainShader.setSampler2D("material.emissive", 2);
+
+        mainShader.setFloat("material.emissiveStrenght", 1.0f);
+        mainShader.setFloat("material.shininess", 32.0f);
        
+        vao.bind();
+        glDrawElements(GL_TRIANGLES, ebo.getCount(), GL_UNSIGNED_INT, 0);
+
+        M = lightSrcTransform.model();
+
+        lightSrcShader.use();
+        lightSrcShader.setMat4("P", mainCamera->projection(800, 600));
+        lightSrcShader.setMat4("V", mainCamera->transform->view());
+        lightSrcShader.setMat4("M", M);
+        lightSrcShader.setVec3("lightColor", lightAmbient);
+
         vao.bind();
         glDrawElements(GL_TRIANGLES, ebo.getCount(), GL_UNSIGNED_INT, 0);
 
