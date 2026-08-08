@@ -7,6 +7,7 @@
 #include "MiniEngine/world/camera.hpp"
 #include "MiniEngine/extras/time.hpp"
 #include "MiniEngine/world/light.hpp"
+#include "MiniEngine/mesh/mesh.hpp"
 using namespace MiniEngine;
 
 Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)));
@@ -111,76 +112,61 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    // Variables
-    std::vector<f32> vertices = {
-        // Up
-         0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,   0.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,   0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,   1.0f, 0.0f,
-        // Down
-         0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,   1.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,   0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,   1.0f, 0.0f,
-        // Left
-        -0.5f,  0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
-        // Right
-         0.5f,  0.5f, -0.5f,    1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,    1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,    1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,    1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
-        // Front
-         0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,   0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,   1.0f, 0.0f,
-        // Back
-        -0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,   1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,   0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,   0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,   1.0f, 0.0f,
-    };
-
-    std::vector<u32> indices = {
-        // Up
-         0,  1,  3,
-         1,  2,  3,
-        // Down
-         4,  5,  7,
-         5,  6,  7,
-        // Left
-         8,  9, 11,
-         9, 10, 11,
-        // Right
-        12, 13, 15,
-        13, 14, 15,
-        // Front
-        16, 17, 19,
-        17, 18, 19,
-        // Back
-        20, 21, 23,
-        21, 22, 23
-    };
+    Mesh mesh(
+        {
+            // Up
+            {{ 0.5f,  0.5f, -0.5f},   { 0.0f,  1.0f,  0.0f},   {1.0f, 1.0f}},
+            {{-0.5f,  0.5f, -0.5f},   { 0.0f,  1.0f,  0.0f},   {0.0f, 1.0f}},
+            {{-0.5f,  0.5f,  0.5f},   { 0.0f,  1.0f,  0.0f},   {0.0f, 0.0f}},
+            {{ 0.5f,  0.5f,  0.5f},   { 0.0f,  1.0f,  0.0f},   {1.0f, 0.0f}},
+            // Down
+            {{ 0.5f, -0.5f,  0.5f},   { 0.0f, -1.0f,  0.0f},   {1.0f, 1.0f}},
+            {{-0.5f, -0.5f,  0.5f},   { 0.0f, -1.0f,  0.0f},   {0.0f, 1.0f}},
+            {{-0.5f, -0.5f, -0.5f},   { 0.0f, -1.0f,  0.0f},   {0.0f, 0.0f}},
+            {{ 0.5f, -0.5f, -0.5f},   { 0.0f, -1.0f,  0.0f},   {1.0f, 0.0f}},
+            // Left
+            {{-0.5f,  0.5f,  0.5f},   {-1.0f,  0.0f,  0.0f},   {1.0f, 1.0f}},
+            {{-0.5f,  0.5f, -0.5f},   {-1.0f,  0.0f,  0.0f},   {0.0f, 1.0f}},
+            {{-0.5f, -0.5f, -0.5f},   {-1.0f,  0.0f,  0.0f},   {0.0f, 0.0f}},
+            {{-0.5f, -0.5f,  0.5f},   {-1.0f,  0.0f,  0.0f},   {1.0f, 0.0f}},
+            // Right
+            {{ 0.5f,  0.5f, -0.5f},   { 1.0f,  0.0f,  0.0f},   {1.0f, 1.0f}},
+            {{ 0.5f,  0.5f,  0.5f},   { 1.0f,  0.0f,  0.0f},   {0.0f, 1.0f}},
+            {{ 0.5f, -0.5f,  0.5f},   { 1.0f,  0.0f,  0.0f},   {0.0f, 0.0f}},
+            {{ 0.5f, -0.5f, -0.5f},   { 1.0f,  0.0f,  0.0f},   {1.0f, 0.0f}},
+            // Front
+            {{ 0.5f,  0.5f,  0.5f},   { 0.0f,  0.0f,  1.0f},   {1.0f, 1.0f}},
+            {{-0.5f,  0.5f,  0.5f},   { 0.0f,  0.0f,  1.0f},   {0.0f, 1.0f}},
+            {{-0.5f, -0.5f,  0.5f},   { 0.0f,  0.0f,  1.0f},   {0.0f, 0.0f}},
+            {{ 0.5f, -0.5f,  0.5f},   { 0.0f,  0.0f,  1.0f},   {1.0f, 0.0f}},
+            // Back
+            {{-0.5f,  0.5f, -0.5f},   { 0.0f,  0.0f, -1.0f},   {1.0f, 1.0f}},
+            {{ 0.5f,  0.5f, -0.5f},   { 0.0f,  0.0f, -1.0f},   {0.0f, 1.0f}},
+            {{ 0.5f, -0.5f, -0.5f},   { 0.0f,  0.0f, -1.0f},   {0.0f, 0.0f}},
+            {{-0.5f, -0.5f, -0.5f},   { 0.0f,  0.0f, -1.0f},   {1.0f, 0.0f}},
+        },
+        {
+            // Up
+             0,  1,  3,
+             1,  2,  3,
+            // Down
+             4,  5,  7,
+             5,  6,  7,
+            // Left
+             8,  9, 11,
+             9, 10, 11,
+            // Right
+            12, 13, 15,
+            13, 14, 15,
+            // Front
+            16, 17, 19,
+            17, 18, 19,
+            // Back
+            20, 21, 23,
+            21, 22, 23
+        }
+    );
     
-    MiniEngine::VAO vao(true); vao.bind();
-    MiniEngine::VBO vbo(vertices.size() * sizeof(f32), vertices.data()); vbo.bind();
-    MiniEngine::EBO ebo(indices.size() * sizeof(u32), indices.data()); ebo.bind();
-
-    vao.setAttribPointer(0, 3, 8 * sizeof(f32), 0);
-    vao.enableIndex(0);
-    vao.setAttribPointer(1, 3, 8 * sizeof(f32), (void*)(3 * sizeof(f32)));
-    vao.enableIndex(1);
-    vao.setAttribPointer(2, 2, 8 * sizeof(f32), (void*)(6 * sizeof(f32)));
-    vao.enableIndex(2);
-
-    vao.unbind();
-    vbo.unbind();
-    ebo.unbind();
-
     Transform transform;
 
     LightSource light(
@@ -215,12 +201,6 @@ int main() {
         mainShader.setMat4("V", mainCamera->transform->view());
         mainShader.setMat4("M", M);
         mainShader.setMat3("mN", glm::mat3(glm::transpose(glm::inverse(M))));
-        /*
-        mainShader.setVec3("light.position", light.transform->position);
-        mainShader.setVec3("light.ambient", light.ambient);
-        mainShader.setVec3("light.diffuse", light.diffuse);
-        mainShader.setVec3("light.specular", light.specular);
-        */
         mainShader.setVec3("camera.position", mainCamera->transform->position);
         mainShader.setFloat("time", Time::current());
 
@@ -248,8 +228,8 @@ int main() {
         mainShader.setFloat("material.emissiveStrenght", 1.0f);
         mainShader.setFloat("material.shininess", 32.0f);
        
-        vao.bind();
-        glDrawElements(GL_TRIANGLES, ebo.getCount(), GL_UNSIGNED_INT, 0);
+        mesh.getVAO().bind();
+        glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
 
         M = light.transform->model();
 
@@ -258,9 +238,9 @@ int main() {
         lightSrcShader.setMat4("V", mainCamera->transform->view());
         lightSrcShader.setMat4("M", M);
         lightSrcShader.setVec3("lightColor", light.ambient);
-
-        vao.bind();
-        glDrawElements(GL_TRIANGLES, ebo.getCount(), GL_UNSIGNED_INT, 0);
+        
+        mesh.getVAO().bind();
+        glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
