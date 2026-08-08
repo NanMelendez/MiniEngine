@@ -1,13 +1,10 @@
 #include "MiniEngine/pch.hpp"
-#include "MiniEngine/wrappers/vao.hpp"
-#include "MiniEngine/wrappers/vbo.hpp"
-#include "MiniEngine/wrappers/ebo.hpp"
 #include "MiniEngine/wrappers/shader.hpp"
 #include "MiniEngine/wrappers/texture2d.hpp"
 #include "MiniEngine/world/camera.hpp"
 #include "MiniEngine/extras/time.hpp"
 #include "MiniEngine/world/light.hpp"
-#include "MiniEngine/mesh/mesh.hpp"
+#include "MiniEngine/extras/prefabs.hpp"
 using namespace MiniEngine;
 
 Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)));
@@ -112,76 +109,20 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    Mesh mesh(
-        {
-            // Up
-            {{ 0.5f,  0.5f, -0.5f},   { 0.0f,  1.0f,  0.0f},   {1.0f, 1.0f}},
-            {{-0.5f,  0.5f, -0.5f},   { 0.0f,  1.0f,  0.0f},   {0.0f, 1.0f}},
-            {{-0.5f,  0.5f,  0.5f},   { 0.0f,  1.0f,  0.0f},   {0.0f, 0.0f}},
-            {{ 0.5f,  0.5f,  0.5f},   { 0.0f,  1.0f,  0.0f},   {1.0f, 0.0f}},
-            // Down
-            {{ 0.5f, -0.5f,  0.5f},   { 0.0f, -1.0f,  0.0f},   {1.0f, 1.0f}},
-            {{-0.5f, -0.5f,  0.5f},   { 0.0f, -1.0f,  0.0f},   {0.0f, 1.0f}},
-            {{-0.5f, -0.5f, -0.5f},   { 0.0f, -1.0f,  0.0f},   {0.0f, 0.0f}},
-            {{ 0.5f, -0.5f, -0.5f},   { 0.0f, -1.0f,  0.0f},   {1.0f, 0.0f}},
-            // Left
-            {{-0.5f,  0.5f,  0.5f},   {-1.0f,  0.0f,  0.0f},   {1.0f, 1.0f}},
-            {{-0.5f,  0.5f, -0.5f},   {-1.0f,  0.0f,  0.0f},   {0.0f, 1.0f}},
-            {{-0.5f, -0.5f, -0.5f},   {-1.0f,  0.0f,  0.0f},   {0.0f, 0.0f}},
-            {{-0.5f, -0.5f,  0.5f},   {-1.0f,  0.0f,  0.0f},   {1.0f, 0.0f}},
-            // Right
-            {{ 0.5f,  0.5f, -0.5f},   { 1.0f,  0.0f,  0.0f},   {1.0f, 1.0f}},
-            {{ 0.5f,  0.5f,  0.5f},   { 1.0f,  0.0f,  0.0f},   {0.0f, 1.0f}},
-            {{ 0.5f, -0.5f,  0.5f},   { 1.0f,  0.0f,  0.0f},   {0.0f, 0.0f}},
-            {{ 0.5f, -0.5f, -0.5f},   { 1.0f,  0.0f,  0.0f},   {1.0f, 0.0f}},
-            // Front
-            {{ 0.5f,  0.5f,  0.5f},   { 0.0f,  0.0f,  1.0f},   {1.0f, 1.0f}},
-            {{-0.5f,  0.5f,  0.5f},   { 0.0f,  0.0f,  1.0f},   {0.0f, 1.0f}},
-            {{-0.5f, -0.5f,  0.5f},   { 0.0f,  0.0f,  1.0f},   {0.0f, 0.0f}},
-            {{ 0.5f, -0.5f,  0.5f},   { 0.0f,  0.0f,  1.0f},   {1.0f, 0.0f}},
-            // Back
-            {{-0.5f,  0.5f, -0.5f},   { 0.0f,  0.0f, -1.0f},   {1.0f, 1.0f}},
-            {{ 0.5f,  0.5f, -0.5f},   { 0.0f,  0.0f, -1.0f},   {0.0f, 1.0f}},
-            {{ 0.5f, -0.5f, -0.5f},   { 0.0f,  0.0f, -1.0f},   {0.0f, 0.0f}},
-            {{-0.5f, -0.5f, -0.5f},   { 0.0f,  0.0f, -1.0f},   {1.0f, 0.0f}},
-        },
-        {
-            // Up
-             0,  1,  3,
-             1,  2,  3,
-            // Down
-             4,  5,  7,
-             5,  6,  7,
-            // Left
-             8,  9, 11,
-             9, 10, 11,
-            // Right
-            12, 13, 15,
-            13, 14, 15,
-            // Front
-            16, 17, 19,
-            17, 18, 19,
-            // Back
-            20, 21, 23,
-            21, 22, 23
-        }
-    );
-    
+    Mesh mesh = Prefabs::cube(Transform());
     Transform transform;
-
-    LightSource light(
-        new Transform(glm::vec3(1.2f, 1.0f, 2.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-        glm::vec3(0.2f),
-        glm::vec3(0.5f),
-        glm::vec3(1.0f)
-    );
-    
-    MiniEngine::ShaderProgram mainShader("../assets/shaders/main.vert", "../assets/shaders/main.frag");
-    MiniEngine::ShaderProgram lightSrcShader("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
-
     Texture2D texDiffuse(load2DImage("../assets/textures/container2.png"));
     Texture2D texSpecular(load2DImage("../assets/textures/container2_specular.png"));
     Texture2D texEmissive(load2DImage("../assets/textures/matrix.jpg"));
+    MiniEngine::ShaderProgram mainShader("../assets/shaders/main.vert", "../assets/shaders/main.frag");
+
+    LightSource light(
+        new Transform(glm::vec3(1.2f, 1.0f, 2.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
+        glm::vec3(0.5f),
+        glm::vec3(0.5f),
+        glm::vec3(1.0f)
+    );
+    MiniEngine::ShaderProgram lightSrcShader("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
     
     // Core loop
     while (!glfwWindowShouldClose(window)) {
@@ -226,7 +167,7 @@ int main() {
         mainShader.setSampler2D("material.emissive", 2);
 
         mainShader.setFloat("material.emissiveStrenght", 1.0f);
-        mainShader.setFloat("material.shininess", 32.0f);
+        mainShader.setFloat("material.shininess", 128.0f);
        
         mesh.getVAO().bind();
         glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);

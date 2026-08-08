@@ -149,5 +149,9 @@ void main() {
             result += calcSpotLights(lights[i], norm, data.position, viewDir);
     }
 
+    vec3 emissive = texture(material.emissive, data.uv).rgb * material.emissiveStrenght * (0.5 + 0.5 + sin(time * 2.0));
+
+    result += mix(emissive, vec3(0.0), ceil(grayscale(texture(material.specular, data.uv).rgb)));
+
     fColor = vec4(result, 1.0);
 }
