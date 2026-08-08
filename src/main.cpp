@@ -5,6 +5,7 @@
 #include "MiniEngine/wrappers/shader.hpp"
 #include "MiniEngine/wrappers/texture2d.hpp"
 #include "MiniEngine/world/camera.hpp"
+#include "MiniEngine/extras/time.hpp"
 using namespace MiniEngine;
 
 Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)));
@@ -12,13 +13,11 @@ Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::
 bool firstMouse = true;
 i32 lastX, lastY;
 
-f32 deltaTime, currrentFrame = 0.0f, lastFrame = 0.0f;
-
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     
-    f32 velocity = deltaTime * 2.5f;
+    f32 velocity = Time::delta() * 2.5f;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         mainCamera->transform->position += mainCamera->transform->front() * velocity;
@@ -144,9 +143,7 @@ int main() {
 
     // Core loop
     while (!glfwWindowShouldClose(window)) {
-        currrentFrame = (f32)glfwGetTime();
-        deltaTime = currrentFrame - lastFrame;
-        lastFrame = currrentFrame;
+        Time::update();
 
         processInput(window);
 

@@ -1,13 +1,15 @@
 #version 330 core
 
-in vec3 vColor;
-in vec2 vUVCoord;
+in SHADER_DATA {
+    vec3 position;
+    vec3 normal;
+    vec2 uv;
+} data;
 
 out vec4 fColor;
 
-uniform vec3 myColor;
 uniform sampler2D myTexture;
 
 void main() {
-    fColor = texture(myTexture, vUVCoord) * vec4(vColor, 1.0);
+    fColor = texture(myTexture, data.uv);
 }
