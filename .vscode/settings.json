@@ -1,0 +1,9 @@
+{
+    "files.readonlyInclude": {
+        "include/**": true,
+        "lib/**": true,
+        "src/glad.c": true,
+        "src/stb_image.cpp": true
+    },
+    "cmake.ignoreCMakeListsMissing": true
+}
