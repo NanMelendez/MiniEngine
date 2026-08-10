@@ -24,8 +24,8 @@ namespace MiniEngine {
         f32 linear;
         f32 quadratic;
 
-        f32 spotAngle; // Outer CutOff
-        f32 spotBlend; // Inner CutOff
+        f32 cutOff; // Outer CutOff
+        f32 outerCutOff; // Inner CutOff
 
         LightSource(Transform* transform, LightType type) : transform(transform), type(type) {
             ambient = glm::vec3(1.0f);
@@ -36,8 +36,8 @@ namespace MiniEngine {
             linear = 0.045f;
             quadratic = 0.0075f;
 
-            spotAngle = 45.0f;
-            spotBlend = 0.5f;
+            cutOff = 0.0f;
+            outerCutOff = 45.0f;
         }
 
         LightSource(Transform* transform, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) : transform(transform), type(LightType::DIRECTIONAL),
@@ -46,21 +46,21 @@ namespace MiniEngine {
             linear = 0.045f;
             quadratic = 0.0075f;
 
-            spotAngle = 45.0f;
-            spotBlend = 0.5f;
+            cutOff = 0.0f;
+            outerCutOff = 45.0f;
         }
 
         LightSource(Transform* transform, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, f32 constant, f32 linear, f32 quadratic) : transform(transform), type(LightType::POINT),
             ambient(ambient), diffuse(diffuse), specular(specular),
             constant(constant), linear(linear), quadratic(quadratic) {
-            spotAngle = 45.0f;
-            spotBlend = 0.5f;
+            cutOff = 0.0f;
+            outerCutOff = 45.0f;
         }
 
-        LightSource(Transform* transform, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, f32 constant, f32 linear, f32 quadratic, f32 spotAngle, f32 spotBlend) : transform(transform), type(LightType::SPOT),
+        LightSource(Transform* transform, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, f32 constant, f32 linear, f32 quadratic, f32 cutOff, f32 outerCutOff) : transform(transform), type(LightType::SPOT),
             ambient(ambient), diffuse(diffuse), specular(specular),
             constant(constant), linear(linear), quadratic(quadratic),
-            spotAngle(spotAngle), spotBlend(spotBlend) {
+            cutOff(cutOff), outerCutOff(outerCutOff) {
 
         }
 
@@ -68,6 +68,7 @@ namespace MiniEngine {
             return transform->front();
         }
 
+        /*
         f32 cutOff() const {
             return glm::radians(glm::mix(spotAngle, 0.0f, spotBlend));
         }
@@ -75,6 +76,7 @@ namespace MiniEngine {
         f32 outerCutOff() const {
             return glm::radians(spotAngle);
         }
+        */
     };
 }
 

@@ -49,6 +49,7 @@ uniform Material material;
 uniform Light lights[MAX_LIGHT_SOURCES];
 uniform Camera camera;
 uniform float time;
+uniform float blinkOffset;
 
 float grayscale(vec3 color) {
     return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
@@ -114,27 +115,6 @@ vec3 calcSpotLights(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 }
 
 void main() {
-    /*
-    // Ambient
-    vec3 ambient = light.ambient * texture(material.diffuse, data.uv).rgb;
-
-    // Diffuse
-    vec3 norm = normalize(data.normal);
-    vec3 lightDir = normalize(light.position - data.position);
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * texture(material.diffuse, data.uv).rgb;
-    
-    // Specular
-    vec3 viewDir = normalize(viewPos - data.position);
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * texture(material.specular, data.uv).rgb;
-
-    // Emissive
-    vec3 emissive = texture(material.emissive, data.uv).rgb * material.emissiveStrenght * (0.5 + 0.5 + sin(time * 2.0));
-
-    vec3 result = ambient + diffuse + specular + mix(emissive, vec3(0.0), ceil(grayscale(texture(material.specular, data.uv).rgb)));
-    */
     vec3 norm = normalize(data.normal);
     vec3 viewDir = normalize(camera.position - data.position);
 
@@ -148,8 +128,8 @@ void main() {
         if (lights[i].lightType == LIGHT_TYPE_SPOT)
             result += calcSpotLights(lights[i], norm, data.position, viewDir);
     }
-
-    vec3 emissive = texture(material.emissive, data.uv).rgb * material.emissiveStrenght * (0.5 + 0.5 + sin(time * 2.0));
+    
+    vec3 emissive = texture(material.emissive, data.uv + vec2(0.0, 0.25 * time)).rgb * material.emissiveStrenght * (0.5 + 0.5 * sin(blinkOffset + (time * 2.0)));
 
     result += mix(emissive, vec3(0.0), ceil(grayscale(texture(material.specular, data.uv).rgb)));
 
