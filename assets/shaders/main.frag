@@ -22,19 +22,15 @@ struct Material {
 };
 
 struct Light {
-    int lightType;
-
     vec3 position;
+    int lightType;
     vec3 direction;
-
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-
     float constant;
+    vec3 ambient;
     float linear;
+    vec3 diffuse;
     float quadratic;
-
+    vec3 specular;
     float cutOff;
     float outerCutOff;
 };
@@ -45,9 +41,21 @@ struct Camera {
     float zFar;
 };
 
+/*
+layout (std140) uniform _uCamera {
+    Camera camera;
+};
+
+layout (std 140) uniform _uLights {
+    Light lights[MAX_LIGHT_SOURCES];
+};
+*/
+
 uniform Material material;
+
 uniform Light lights[MAX_LIGHT_SOURCES];
 uniform Camera camera;
+
 uniform float time;
 uniform float blinkOffset;
 

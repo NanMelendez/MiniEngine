@@ -1,3 +1,7 @@
+#include <glm/gtc/random.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+
 #include "MiniEngine/pch.hpp"
 #include "MiniEngine/wrappers/shader.hpp"
 #include "MiniEngine/wrappers/texture2d.hpp"
@@ -5,9 +9,8 @@
 #include "MiniEngine/extras/time.hpp"
 #include "MiniEngine/world/light.hpp"
 #include "MiniEngine/extras/prefabs.hpp"
-#include <glm/gtc/random.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
+#include "MiniEngine/world/material.hpp"
+
 using namespace MiniEngine;
 
 Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)));
@@ -117,6 +120,14 @@ int main() {
     Texture2D texSpecular = Loader<Texture2D>::load("../assets/textures/container2_specular.png");
     Texture2D texEmissive = Loader<Texture2D>::load("../assets/textures/matrix.jpg");
     ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/main.frag");
+
+    Material mat(&mainShader);
+    mat.set<Texture2D*>("diffuse", &texDiffuse);
+    mat.set<Texture2D*>("specular", &texSpecular);
+    mat.set<Texture2D*>("emissive", &texEmissive);
+    mat.set<f32>("emissiveStrenght", 1.0f);
+    mat.set<f32>("shininess", 32.0f);
+
     std::vector<Transform> transforms = {
         Transform(glm::vec3(0.0f, 0.0f, 0.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
         Transform(glm::vec3(2.0f, 5.0f, -15.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
@@ -129,7 +140,6 @@ int main() {
         Transform(glm::vec3(1.5f, 0.2f, -1.5f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
         Transform(glm::vec3(-1.3f, 1.0f, -1.5f), glm::identity<glm::quat>(), glm::vec3(1.0f))
     };
-
     for (i32 i = 0; i < transforms.size(); i++) {
         transforms[i].rotate(glm::angleAxis(20.0f * i, glm::normalize(glm::vec3(1.0f, 0.3f, 0.5f))));
     }
@@ -139,6 +149,9 @@ int main() {
         blinkOffsets.push_back(glm::linearRand(0.0f, 100.0f));
 
     ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
+    
+    Material lightSrcMat(&lightSrcShader);
+    
     std::vector<LightSource> lightSorces = {
         // Directional light 1
         LightSource(
@@ -214,64 +227,56 @@ int main() {
 
         glm::mat4 M = glm::mat4(1.0f);
         
-        mainShader.use();
-        mainShader.setMat4("P", mainCamera->projection(800, 600));
-        mainShader.setMat4("V", mainCamera->transform->view());
-        mainShader.setVec3("camera.position", mainCamera->transform->position);
-        mainShader.setFloat("time", Time::current());
+        mat.getShader()->use();
+        mat.getShader()->setMat4("P", mainCamera->projection(800, 600));
+        mat.getShader()->setMat4("V", mainCamera->transform->view());
+        mat.getShader()->setVec3("camera.position", mainCamera->transform->position);
+        mat.getShader()->setFloat("time", Time::current());
         
         for (i32 i = 0; i < lightSorces.size(); i++) {
-            mainShader.setInt("lights[" + std::to_string(i) + "].lightType", static_cast<i32>(lightSorces[i].type));
-            mainShader.setVec3("lights[" + std::to_string(i) + "].position", lightSorces[i].transform->position);
-            mainShader.setVec3("lights[" + std::to_string(i) + "].direction", lightSorces[i].direction());
-            mainShader.setVec3("lights[" + std::to_string(i) + "].ambient", lightSorces[i].ambient);
-            mainShader.setVec3("lights[" + std::to_string(i) + "].diffuse", lightSorces[i].diffuse);
-            mainShader.setVec3("lights[" + std::to_string(i) + "].specular", lightSorces[i].specular);
-            mainShader.setFloat("lights[" + std::to_string(i) + "].constant", lightSorces[i].constant);
-            mainShader.setFloat("lights[" + std::to_string(i) + "].linear", lightSorces[i].linear);
-            mainShader.setFloat("lights[" + std::to_string(i) + "].quadratic", lightSorces[i].quadratic);
-            mainShader.setFloat("lights[" + std::to_string(i) + "].cutOff", glm::cos(glm::radians(lightSorces[i].cutOff)));
-            mainShader.setFloat("lights[" + std::to_string(i) + "].outerCutOff", glm::cos(glm::radians(lightSorces[i].outerCutOff)));
+            mat.getShader()->setInt("lights[" + std::to_string(i) + "].lightType", static_cast<i32>(lightSorces[i].type));
+            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].position", lightSorces[i].transform->position);
+            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].direction", lightSorces[i].direction());
+            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].ambient", lightSorces[i].ambient);
+            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].diffuse", lightSorces[i].diffuse);
+            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].specular", lightSorces[i].specular);
+            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].constant", lightSorces[i].constant);
+            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].linear", lightSorces[i].linear);
+            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].quadratic", lightSorces[i].quadratic);
+            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].cutOff", glm::cos(glm::radians(lightSorces[i].cutOff)));
+            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].outerCutOff", glm::cos(glm::radians(lightSorces[i].outerCutOff)));
         }
-
-        texDiffuse.bind(0);
-        mainShader.setSampler2D("material.diffuse", 0);
-
-        texSpecular.bind(1);
-        mainShader.setSampler2D("material.specular", 1);
-
-        texEmissive.bind(2);
-        mainShader.setSampler2D("material.emissive", 2);
-
-        mainShader.setFloat("material.emissiveStrenght", 1.0f);
-        mainShader.setFloat("material.shininess", 32.0f);
-
+        
+        mat.bind();
         for (i32 i = 0; i < transforms.size(); i++) {
             M = transforms[i].model();
 
-            mainShader.setMat4("M", M);
-            mainShader.setMat3("mN", glm::mat3(glm::transpose(glm::inverse(M))));
-            mainShader.setFloat("blinkOffset", blinkOffsets[i]);
+            mat.getShader()->setMat4("M", M);
+            mat.getShader()->setMat3("mN", glm::mat3(glm::transpose(glm::inverse(M))));
+            mat.getShader()->setFloat("blinkOffset", blinkOffsets[i]);
 
             mesh.getVAO().bind();
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
         }
+        mat.unbind();
 
+        lightSrcMat.bind();
         for (i32 i = 0; i < lightSorces.size(); i++) {
             if (i == lightSorces.size() - 1)
                 continue;
             
             M = lightSorces[i].transform->model();
+            
+            lightSrcMat.getShader()->setMat4("P", mainCamera->projection(800, 600));
+            lightSrcMat.getShader()->setMat4("V", mainCamera->transform->view());
+            lightSrcMat.getShader()->setMat4("M", M);
 
-            lightSrcShader.use();
-            lightSrcShader.setMat4("P", mainCamera->projection(800, 600));
-            lightSrcShader.setMat4("V", mainCamera->transform->view());
-            lightSrcShader.setMat4("M", M);
-            lightSrcShader.setVec3("lightColor", lightSorces[i].diffuse);
+            lightSrcMat.set<glm::vec3>("color", lightSorces[i].diffuse);
             
             mesh.getVAO().bind();
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
         }
+        lightSrcMat.unbind();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

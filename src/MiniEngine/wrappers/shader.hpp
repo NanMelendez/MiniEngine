@@ -58,6 +58,10 @@ namespace MiniEngine {
             }
         }
 
+        const std::unordered_map<std::string, UniformInfo>& getUniformList() const {
+            return uniforms;
+        }
+
         void setBool(std::string_view name, bool value) const {
             const UniformInfo* info = getUniform(name);
 
@@ -296,6 +300,10 @@ namespace MiniEngine {
                 glUniform1i(info->location, location);
         }
 
+        void linkUniformBlock(std::string_view name, u32 location) const {
+            glUniformBlockBinding(id, glGetUniformBlockIndex(id, std::string(name).c_str()), location);
+        }
+
     private:
         std::string vertexSource;
         std::string fragmentSource;
@@ -431,6 +439,26 @@ namespace MiniEngine {
                 shader.uniforms.emplace(name, std::move(info));
             }
         }
+
+        /*
+        static void reflectUniformBlocks(ShaderProgram& shader) {
+            i32 uniformBlockCount;
+            i32 uniformBlockMaxVarLength;
+
+            glGetProgramiv(shader.id, GL_ACTIVE_UNIFORM_BLOCKS, &uniformBlockCount);
+            glGetProgramiv(shader.id, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &uniformBlockMaxVarLength);
+
+            std::vector<i8> nameBuffer(uniformBlockMaxVarLength);
+
+            for (i32 i = 0; i < uniformBlockCount; i++) {
+                // ...
+
+                GLsizei length;
+
+                glgetactiveuniform
+            }
+        }
+        */
     };
 }
 

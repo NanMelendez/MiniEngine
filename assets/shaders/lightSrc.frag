@@ -8,8 +8,12 @@ in SHADER_DATA {
 
 out vec4 fColor;
 
-uniform vec3 lightColor;
+struct Material {
+    vec3 color;
+};
+
+uniform Material material;
 
 void main() {
-    fColor = vec4(lightColor, 1.0);
+    fColor = vec4(material.color, 1.0);
 }

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <variant>
 #include <vector>
 
 #include <glad/glad.h>
