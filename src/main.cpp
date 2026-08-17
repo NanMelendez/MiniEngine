@@ -157,19 +157,19 @@ int main() {
     Material lightSrcMat(&lightSrcShader);
 
     glm::vec3 pointLightColors[] = {
-        glm::vec3(1.0f, 0.6f, 0.0f),
-        glm::vec3(1.0f, 0.0f, 0.0f),
-        glm::vec3(1.0f, 1.0f, 0.0f),
-        glm::vec3(0.2f, 0.2f, 1.0f)
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        glm::vec3(0.3f, 0.1f, 0.1f)
     };
     
     std::vector<LightSource> lightSorces = {
         // Directional light 1
         LightSource(
             new Transform(glm::vec3(0.0f), glm::quatLookAt(glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.2f)),
-            glm::vec3(0.3f, 0.24f, 0.14f),
-            glm::vec3(0.7f, 0.42f, 0.26f),
-            glm::vec3(0.5f, 0.5f, 0.5f)
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(0.05f, 0.05f, 0.05f),
+            glm::vec3(0.2f, 0.2f, 0.2f)
         ),
         // Point light 1
         LightSource(
@@ -178,8 +178,8 @@ int main() {
             pointLightColors[0],
             pointLightColors[0],
             1.0f,
-            0.09f,
-            0.032f
+            0.14f,
+            0.07f
         ),
         // Point light 2
         LightSource(
@@ -188,8 +188,8 @@ int main() {
             pointLightColors[1],
             pointLightColors[1],
             1.0f,
-            0.09f,
-            0.032f
+            0.14f,
+            0.07f
         ),
         // Point light 3
         LightSource(
@@ -198,8 +198,8 @@ int main() {
             pointLightColors[2],
             pointLightColors[2],
             1.0f,
-            0.09f,
-            0.032f
+            0.22f,
+            0.2f
         ),
         // Point light 4
         LightSource(
@@ -208,26 +208,24 @@ int main() {
             pointLightColors[3],
             pointLightColors[3],
             1.0f,
-            0.09f,
-            0.032f
+            0.14f,
+            0.07f
         ),
         // Spot light
         LightSource(
             mainCamera->transform,
             glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(0.8f, 0.8f, 0.0f),
-            glm::vec3(0.8f, 0.8f, 0.0f),
+            glm::vec3(1.0f, 1.0f, 1.0f),
+            glm::vec3(1.0f, 1.0f, 1.0f),
             1.0f,
             0.09f,
             0.032f,
-            12.5f,
-            13.0f
+            10.0f,
+            15.0f
         )
     };
 
-    glm::vec3 bgColor = glm::vec3(0.75f, 0.52f, 0.3f);
-
-    i32 lightTest = 5;
+    glm::vec3 bgColor = glm::vec3(0.0f, 0.0f, 0.0f);
     
     // Core loop
     while (!glfwWindowShouldClose(window)) {
@@ -241,34 +239,32 @@ int main() {
         glm::mat4 M = glm::mat4(1.0f);
         
         mat.getShader()->use();
-        mat.getShader()->setMat4("P", mainCamera->projection(wWidth, wHeight));
-        mat.getShader()->setMat4("V", mainCamera->transform->view());
-        mat.getShader()->setVec3("camera.position", mainCamera->transform->position);
-        mat.getShader()->setFloat("time", Time::current());
+        mat.getShader()->setUniform("P", mainCamera->projection(wWidth, wHeight));
+        mat.getShader()->setUniform("V", mainCamera->transform->view());
+        mat.getShader()->setUniform("camera.position", mainCamera->transform->position);
+        mat.getShader()->setUniform("time", Time::current());
         
         for (i32 i = 0; i < lightSorces.size(); i++) {
-            // if (i != lightTest) continue;
-
-            mat.getShader()->setInt("lights[" + std::to_string(i) + "].lightType", static_cast<i32>(lightSorces[i].type));
-            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].position", lightSorces[i].transform->position);
-            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].direction", lightSorces[i].direction());
-            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].ambient", lightSorces[i].ambient);
-            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].diffuse", lightSorces[i].diffuse);
-            mat.getShader()->setVec3("lights[" + std::to_string(i) + "].specular", lightSorces[i].specular);
-            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].constant", lightSorces[i].constant);
-            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].linear", lightSorces[i].linear);
-            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].quadratic", lightSorces[i].quadratic);
-            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].cutOff", glm::cos(glm::radians(lightSorces[i].cutOff)));
-            mat.getShader()->setFloat("lights[" + std::to_string(i) + "].outerCutOff", glm::cos(glm::radians(lightSorces[i].outerCutOff)));
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].lightType", static_cast<i32>(lightSorces[i].type));
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].position", lightSorces[i].transform->position);
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].direction", lightSorces[i].direction());
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].ambient", lightSorces[i].ambient);
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].diffuse", lightSorces[i].diffuse);
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].specular", lightSorces[i].specular);
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].constant", lightSorces[i].constant);
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].linear", lightSorces[i].linear);
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].quadratic", lightSorces[i].quadratic);
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].cutOff", glm::cos(glm::radians(lightSorces[i].cutOff)));
+            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].outerCutOff", glm::cos(glm::radians(lightSorces[i].outerCutOff)));
         }
         
         mat.bind();
         for (i32 i = 0; i < transforms.size(); i++) {
             M = transforms[i].model();
 
-            mat.getShader()->setMat4("M", M);
-            mat.getShader()->setMat3("mN", glm::mat3(glm::transpose(glm::inverse(M))));
-            mat.getShader()->setFloat("blinkOffset", blinkOffsets[i]);
+            mat.getShader()->setUniform("M", M);
+            mat.getShader()->setUniform("mN", glm::mat3(glm::transpose(glm::inverse(M))));
+            mat.getShader()->setUniform("blinkOffset", blinkOffsets[i]);
 
             mesh.getVAO().bind();
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
@@ -277,17 +273,15 @@ int main() {
 
 
         lightSrcMat.getShader()->use();
-        lightSrcMat.getShader()->setMat4("P", mainCamera->projection(wWidth, wHeight));
-        lightSrcMat.getShader()->setMat4("V", mainCamera->transform->view());
+        lightSrcMat.getShader()->setUniform("P", mainCamera->projection(wWidth, wHeight));
+        lightSrcMat.getShader()->setUniform("V", mainCamera->transform->view());
 
         for (i32 i = 0; i < lightSorces.size(); i++) {
-            // if (i != lightTest) continue;
-
             if (i == lightSorces.size() - 1)
                 continue;
             
             M = lightSorces[i].transform->model();
-            lightSrcMat.getShader()->setMat4("M", M);
+            lightSrcMat.getShader()->setUniform("M", M);
             
             lightSrcMat.set<glm::vec3>("color", lightSorces[i].diffuse);
 

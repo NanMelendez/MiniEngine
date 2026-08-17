@@ -72,218 +72,218 @@ namespace MiniEngine {
         const std::unordered_map<std::string, UniformBlockInfo>& getUniformBlockList() const {
             return uniformBlocks;
         }
-
-        void setBool(std::string_view name, bool value) const {
+        
+        void setUniform(std::string_view name, bool value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_BOOL))
                 glUniform1i(info->location, value);
         }
 
-        void setInt(std::string_view name, i32 value) const {
+        void setUniform(std::string_view name, i32 value) const {
             const UniformInfo* info = getUniform(name);
-
+            
             if (validateUniformPtr(info, GL_INT))
                 glUniform1i(info->location, value);
         }
 
-        void setUInt(std::string_view name, u32 value) const {
+        void setUniform(std::string_view name, u32 value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_UNSIGNED_INT))
                 glUniform1ui(info->location, value);
         }
 
-        void setFloat(std::string_view name, f32 value) const {
+        void setUniform(std::string_view name, f32 value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT))
                 glUniform1f(info->location, value);
         }
 
-        void setVec2(std::string_view name, f32 x, f32 y)  const {
+        void setUniform(std::string_view name, f32 x, f32 y)  const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_VEC2))
                 glUniform2f(info->location, x, y);
         }
 
-        void setVec2(std::string_view name, glm::vec2 value) const {
+        void setUniform(std::string_view name, glm::vec2 value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_VEC2))
                 glUniform2fv(info->location, 1, glm::value_ptr(value));
         }
 
-        void setIVec2(std::string_view name, i32 x, i32 y) const {
+        void setUniform(std::string_view name, i32 x, i32 y) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_INT_VEC2))
                 glUniform2i(info->location, x, y);
         }
 
-        void setIVec2(std::string_view name, const glm::ivec2& value) const {
+        void setUniform(std::string_view name, const glm::ivec2& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_INT_VEC2))
                 glUniform2iv(info->location, 1, glm::value_ptr(value));
         }
 
-        void setUVec2(std::string_view name, u32 x, u32 y) const {
+        void setUniform(std::string_view name, u32 x, u32 y) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_UNSIGNED_INT_VEC2))
                 glUniform2ui(info->location, x, y);
         }
 
-        void setUVec2(std::string_view name, const glm::uvec2& value) const {
+        void setUniform(std::string_view name, const glm::uvec2& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_UNSIGNED_INT_VEC2))
                 glUniform2uiv(info->location, 1, glm::value_ptr(value));
         }
 
-        void setVec3(std::string_view name, f32 x, f32 y, f32 z) const {
+        void setUniform(std::string_view name, f32 x, f32 y, f32 z) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_VEC3))
                 glUniform3f(info->location, x, y, z);
         }
 
-        void setVec3(std::string_view name, glm::vec3 value) const {
+        void setUniform(std::string_view name, glm::vec3 value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_VEC3))
                 glUniform3fv(info->location, 1, glm::value_ptr(value));
         }
 
-        void setIVec3(std::string_view name, i32 x, i32 y, i32 z) const {
+        void setUniform(std::string_view name, i32 x, i32 y, i32 z) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_INT_VEC3))
                 glUniform3i(info->location, x, y, z);
         }
 
-        void setIVec3(std::string_view name, const glm::ivec3& value) const {
+        void setUniform(std::string_view name, const glm::ivec3& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_INT_VEC3))
                 glUniform3iv(info->location, 1, glm::value_ptr(value));
         }
 
-        void setUVec3(std::string_view name, u32 x, u32 y, u32 z) const {
+        void setUniform(std::string_view name, u32 x, u32 y, u32 z) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_UNSIGNED_INT_VEC3))
                 glUniform3ui(info->location, x, y, z);
         }
 
-        void setUVec3(std::string_view name, const glm::uvec3& value) const {
+        void setUniform(std::string_view name, const glm::uvec3& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_UNSIGNED_INT_VEC3))
                 glUniform3uiv(info->location, 1, glm::value_ptr(value));
         }
 
-        void setVec4(std::string_view name, f32 x, f32 y, f32 z, f32 w) const {
+        void setUniform(std::string_view name, f32 x, f32 y, f32 z, f32 w) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_VEC4))
                 glUniform4f(info->location, x, y, z, w);
         }
 
-        void setVec4(std::string_view name, glm::vec4 value) const {
+        void setUniform(std::string_view name, glm::vec4 value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_VEC4))
                 glUniform4fv(info->location, 1, glm::value_ptr(value));
         }
 
-        void setIVec4(std::string_view name, i32 x, i32 y, i32 z, i32 w) const {
+        void setUniform(std::string_view name, i32 x, i32 y, i32 z, i32 w) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_INT_VEC4))
                 glUniform4i(info->location, x, y, z, w);
         }
 
-        void setIVec4(std::string_view name, const glm::ivec4& value) const {
+        void setUniform(std::string_view name, const glm::ivec4& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_INT_VEC4))
                 glUniform4iv(info->location, 1, glm::value_ptr(value));
         }
 
-        void setUVec4(std::string_view name, u32 x, u32 y, u32 z, u32 w) const {
+        void setUniform(std::string_view name, u32 x, u32 y, u32 z, u32 w) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_UNSIGNED_INT_VEC4))
                 glUniform4ui(info->location, x, y, z, w);
         }
 
-        void setUVec4(std::string_view name, const glm::uvec4& value) const {
+        void setUniform(std::string_view name, const glm::uvec4& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_UNSIGNED_INT_VEC4))
                 glUniform4uiv(info->location, 1, glm::value_ptr(value));
         }
 
-        void setMat2(std::string_view name, glm::mat2 value) const {
+        void setUniform(std::string_view name, glm::mat2 value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_MAT2))
                 glUniformMatrix2fv(info->location, 1, GL_FALSE, glm::value_ptr(value));
         }
 
-        void setMat3(std::string_view name, glm::mat3 value) const {
+        void setUniform(std::string_view name, glm::mat3 value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_MAT3))
                 glUniformMatrix3fv(info->location, 1, GL_FALSE, glm::value_ptr(value));
         }
 
-        void setMat4(std::string_view name, glm::mat4 value) const {
+        void setUniform(std::string_view name, glm::mat4 value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_MAT4))
                 glUniformMatrix4fv(info->location, 1, GL_FALSE, glm::value_ptr(value));
         }
 
-        void setMat2x3(std::string_view name, const glm::mat2x3& value) const {
+        void setUniform(std::string_view name, const glm::mat2x3& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_MAT2x3))
                 glUniformMatrix2x3fv(info->location, 1, GL_FALSE, glm::value_ptr(value));
         }
 
-        void setMat3x2(std::string_view name, const glm::mat3x2& value) const {
+        void setUniform(std::string_view name, const glm::mat3x2& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_MAT3x2))
                 glUniformMatrix3x2fv(info->location, 1, GL_FALSE, glm::value_ptr(value));
         }
 
-        void setMat2x4(std::string_view name, const glm::mat2x4& value) const {
+        void setUniform(std::string_view name, const glm::mat2x4& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_MAT2x4))
                 glUniformMatrix2x4fv(info->location, 1, GL_FALSE, glm::value_ptr(value));
         }
 
-        void setMat4x2(std::string_view name, const glm::mat4x2& value) const {
+        void setUniform(std::string_view name, const glm::mat4x2& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_MAT4x2))
                 glUniformMatrix4x2fv(info->location, 1, GL_FALSE, glm::value_ptr(value));
         }
 
-        void setMat3x4(std::string_view name, const glm::mat3x4& value) const {
+        void setUniform(std::string_view name, const glm::mat3x4& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_MAT3x4))
                 glUniformMatrix3x4fv(info->location, 1, GL_FALSE, glm::value_ptr(value));
         }
 
-        void setMat4x3(std::string_view name, const glm::mat4x3& value) const {
+        void setUniform(std::string_view name, const glm::mat4x3& value) const {
             const UniformInfo* info = getUniform(name);
 
             if (validateUniformPtr(info, GL_FLOAT_MAT4x3))

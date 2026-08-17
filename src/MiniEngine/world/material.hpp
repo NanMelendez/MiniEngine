@@ -81,76 +81,20 @@ namespace MiniEngine {
             shader->use();
 
             for (const auto& [name, variable] : variables) {
-                if (std::holds_alternative<bool>(variable))
-                    shader->setBool(matBase + name, std::get<bool>(variable));
-                
-                if (std::holds_alternative<i32>(variable))
-                    shader->setInt(matBase + name, std::get<i32>(variable));
-                
-                if (std::holds_alternative<f32>(variable))
-                    shader->setFloat(matBase + name, std::get<f32>(variable));
-                
-                if (std::holds_alternative<glm::vec2>(variable))
-                    shader->setVec2(matBase + name, std::get<glm::vec2>(variable));
-                
-                if (std::holds_alternative<glm::ivec2>(variable))
-                    shader->setIVec2(matBase + name, std::get<glm::ivec2>(variable));
-                
-                if (std::holds_alternative<glm::uvec2>(variable))
-                    shader->setUVec2(matBase + name, std::get<glm::uvec2>(variable));
-                
-                if (std::holds_alternative<glm::vec3>(variable))
-                    shader->setVec3(matBase + name, std::get<glm::vec3>(variable));
-                
-                if (std::holds_alternative<glm::ivec3>(variable))
-                    shader->setIVec3(matBase + name, std::get<glm::ivec3>(variable));
-                
-                if (std::holds_alternative<glm::uvec3>(variable))
-                    shader->setUVec3(matBase + name, std::get<glm::uvec3>(variable));
-                
-                if (std::holds_alternative<glm::vec4>(variable))
-                    shader->setVec4(matBase + name, std::get<glm::vec4>(variable));
-                
-                if (std::holds_alternative<glm::ivec4>(variable))
-                    shader->setIVec4(matBase + name, std::get<glm::ivec4>(variable));
-                
-                if (std::holds_alternative<glm::uvec4>(variable))
-                    shader->setUVec4(matBase + name, std::get<glm::uvec4>(variable));
-                
-                if (std::holds_alternative<glm::mat2>(variable))
-                    shader->setMat2(matBase + name, std::get<glm::mat2>(variable));
-                
-                if (std::holds_alternative<glm::mat2x3>(variable))
-                    shader->setMat2x3(matBase + name, std::get<glm::mat2x3>(variable));
-                
-                if (std::holds_alternative<glm::mat2x4>(variable))
-                    shader->setMat2x4(matBase + name, std::get<glm::mat2x4>(variable));
-                
-                if (std::holds_alternative<glm::mat3>(variable))
-                    shader->setMat3(matBase + name, std::get<glm::mat3>(variable));
-                
-                if (std::holds_alternative<glm::mat3x2>(variable))
-                    shader->setMat3x2(matBase + name, std::get<glm::mat3x2>(variable));
-                
-                if (std::holds_alternative<glm::mat3x4>(variable))
-                    shader->setMat3x4(matBase + name, std::get<glm::mat3x4>(variable));
-                
-                if (std::holds_alternative<glm::mat4>(variable))
-                    shader->setMat4(matBase + name, std::get<glm::mat4>(variable));
-                
-                if (std::holds_alternative<glm::mat4x2>(variable))
-                    shader->setMat4x2(matBase + name, std::get<glm::mat4x2>(variable));
-                
-                if (std::holds_alternative<glm::mat4x3>(variable))
-                    shader->setMat4x3(matBase + name, std::get<glm::mat4x3>(variable));
-                
-                if (std::holds_alternative<Texture2D*>(variable)) {
-                    Texture2D* temp = std::get<Texture2D*>(variable);
-                    temp->bind(texture2DCount);
-                    if (temp)
+                std::visit([&](const auto& value) {
+                    using T = std::decay_t<decltype(value)>;
+
+                    if constexpr (std::is_same_v<T, Texture2D*>) {
+                        if (!value) return;
+
+                        value->bind(texture2DCount);
                         shader->setSampler2D(matBase + name, texture2DCount);
-                    texture2DCount++;
-                }
+
+                        texture2DCount++;
+                    }
+                    else
+                        shader->setUniform(matBase + name, value);
+                }, variable);
             }
         }
 
