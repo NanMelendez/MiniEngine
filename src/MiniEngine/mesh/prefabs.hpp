@@ -2,7 +2,7 @@
 #define __MINIENGINE_PREFAB_MESHES__
 
 #include "../world/transform.hpp"
-#include "../mesh/mesh.hpp"
+#include "mesh.hpp"
 
 namespace MiniEngine {
     class Prefabs {

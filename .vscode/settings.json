@@ -5,5 +5,9 @@
         "src/glad.c": true,
         "src/stb_image.cpp": true
     },
-    "cmake.ignoreCMakeListsMissing": true
+    "cmake.ignoreCMakeListsMissing": true,
+    "files.exclude": {
+        "include/": true,
+        "lib/": true
+    }
 }

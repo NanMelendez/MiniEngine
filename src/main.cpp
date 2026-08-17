@@ -1,17 +1,4 @@
-#include <glm/gtc/random.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
-
-#include "MiniEngine/pch.hpp"
-#include "MiniEngine/wrappers/shader.hpp"
-#include "MiniEngine/wrappers/texture2d.hpp"
-#include "MiniEngine/world/camera.hpp"
-#include "MiniEngine/extras/time.hpp"
-#include "MiniEngine/world/light.hpp"
-#include "MiniEngine/extras/prefabs.hpp"
-#include "MiniEngine/world/material.hpp"
-#include "MiniEngine/wrappers/ubo.hpp"
-
+#include "MiniEngine/miniengine.hpp"
 using namespace MiniEngine;
 
 Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)));
@@ -262,6 +249,7 @@ int main() {
         glfwSetWindowTitle(window, (std::string("MiniEngine") + " - FPS: " + std::to_string((i32)Time::getFPS())).c_str());
 
         processInput(window);
+        glfwPollEvents();
 
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -306,7 +294,6 @@ int main() {
         }
         mat.unbind();
 
-
         lightSrcMat.getShader()->use();
         for (i32 i = 0; i < lightSorces.size(); i++) {
             if (i == lightSorces.size() - 1)
@@ -325,7 +312,6 @@ int main() {
         lightSrcMat.unbind();
 
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 
     return 0;

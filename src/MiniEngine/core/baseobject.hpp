@@ -2,7 +2,7 @@
 #define __MINIENGINE_CORE_OBJECT__
 
 #include "../pch.hpp"
-#include "../extras/types.hpp"
+#include "types.hpp"
 
 namespace MiniEngine {
     namespace Core {

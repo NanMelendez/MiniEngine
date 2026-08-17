@@ -2,7 +2,7 @@
 #define __MINIENGINE_TRANSFORM__
 
 #include "../pch.hpp"
-#include "../extras/types.hpp"
+#include "../core/types.hpp"
 
 namespace MiniEngine {
     enum class TransformOrder {

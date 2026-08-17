@@ -2,7 +2,7 @@
 #define __MINIENGINE_TIME_MANAGER__
 
 #include "../pch.hpp"
-#include "types.hpp"
+#include "../core/types.hpp"
 
 namespace MiniEngine {
     class Time {
