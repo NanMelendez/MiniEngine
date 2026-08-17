@@ -10,16 +10,8 @@ out SHADER_DATA {
     vec2 uv;
 } data;
 
-/*
-layout (std140) uniform _uMatrices {
-    mat4 P;
-    mat4 V;
-};
-*/
-
 uniform mat4 P;
 uniform mat4 V;
-
 uniform mat4 M;
 uniform mat3 mN;
 

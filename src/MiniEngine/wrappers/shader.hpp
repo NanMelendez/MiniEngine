@@ -17,6 +17,13 @@ namespace MiniEngine {
         GLint size;
     };
 
+    struct UniformBlockInfo {
+        GLuint index;
+        GLint binding;
+        GLint size;
+        GLint activeUniforms;
+    };
+
     class ShaderProgram final : public Core::BaseObject {
     public:
         template<typename T>
@@ -60,6 +67,10 @@ namespace MiniEngine {
 
         const std::unordered_map<std::string, UniformInfo>& getUniformList() const {
             return uniforms;
+        }
+
+        const std::unordered_map<std::string, UniformBlockInfo>& getUniformBlockList() const {
+            return uniformBlocks;
         }
 
         void setBool(std::string_view name, bool value) const {
@@ -310,6 +321,7 @@ namespace MiniEngine {
         std::string geometrySource;
 
         std::unordered_map<std::string, UniformInfo> uniforms;
+        std::unordered_map<std::string, UniformBlockInfo> uniformBlocks;
         
         const UniformInfo* getUniform(std::string_view name) const {
             auto it= uniforms.find(std::string(name));
@@ -325,17 +337,20 @@ namespace MiniEngine {
     template<>
     class Loader<ShaderProgram> {
     public:
-        static ShaderProgram load(std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath = "") {
+        static ShaderProgram load(std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath = "", const std::vector<std::pair<std::string, GLuint>>& bindings = {}) {
             ShaderProgram shader;
 
             shader.id = glCreateProgram();
 
-            reload(shader, vertexPath, fragmentPath, geometryPath);
+            reload(shader, vertexPath, fragmentPath, geometryPath, bindings);
 
             return shader;
         }
 
-        static void reload(ShaderProgram& shader, std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath = "") {
+        static void reload(ShaderProgram& shader, std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath = "", const std::vector<std::pair<std::string, GLuint>>& bindings = {}) {
+            shader.uniforms.clear();
+            shader.uniformBlocks.clear();
+            
             constructSources(shader, vertexPath, fragmentPath, geometryPath);
 
             GLuint vertexID = createShader(GL_VERTEX_SHADER, shader.vertexSource.c_str());
@@ -357,7 +372,10 @@ namespace MiniEngine {
             if (geometryID)
                 glDeleteShader(geometryID);
             
+            linkUBOBindings(shader, bindings);
+            
             reflectUniforms(shader);
+            reflectUniformBlocks(shader);
         }
 
     private:
@@ -414,6 +432,11 @@ namespace MiniEngine {
             }
         }
 
+        static void linkUBOBindings(ShaderProgram& shader, const std::vector<std::pair<std::string, GLuint>>& bindings) {
+            for (const auto& [name, bindingPoint] : bindings)
+                shader.linkUniformBlock(name, bindingPoint);
+        }
+
         static void reflectUniforms(ShaderProgram& shader) {
             i32 uniformCount;
             i32 uniformMaxVarLength;
@@ -440,7 +463,6 @@ namespace MiniEngine {
             }
         }
 
-        /*
         static void reflectUniformBlocks(ShaderProgram& shader) {
             i32 uniformBlockCount;
             i32 uniformBlockMaxVarLength;
@@ -451,14 +473,27 @@ namespace MiniEngine {
             std::vector<i8> nameBuffer(uniformBlockMaxVarLength);
 
             for (i32 i = 0; i < uniformBlockCount; i++) {
-                // ...
+                UniformBlockInfo info;
 
                 GLsizei length;
 
-                glgetactiveuniform
+                glGetActiveUniformBlockName(shader.id, i, uniformBlockMaxVarLength, &length, nameBuffer.data());
+
+                std::string name(nameBuffer.data(), length);
+                info.index = glGetUniformBlockIndex(shader.id, name.c_str());
+
+                if (info.index == -1)
+                    continue;
+                
+                GLint var;
+                
+                glGetActiveUniformBlockiv(shader.id, info.index, GL_UNIFORM_BLOCK_BINDING, &info.binding);
+                glGetActiveUniformBlockiv(shader.id, info.index, GL_UNIFORM_BLOCK_DATA_SIZE, &info.size);
+                glGetActiveUniformBlockiv(shader.id, info.index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &info.activeUniforms);
+
+                shader.uniformBlocks.emplace(name, std::move(info));
             }
         }
-        */
     };
 }
 

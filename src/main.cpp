@@ -18,6 +18,8 @@ Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::
 bool firstMouse = true;
 i32 lastX, lastY;
 
+i32 wWidth = 800, wHeight = 600;
+
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -40,6 +42,8 @@ void processInput(GLFWwindow* window) {
 
 void framebufferSizeCallback(GLFWwindow* window, i32 width, i32 height) {
     glViewport(0, 0, width, height);
+    wWidth = width;
+    wHeight = height;
 }
 
 void scrollCallback(GLFWwindow* window, f64 xOffset, f64 yOffset) {
@@ -93,7 +97,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800 ,600, "MiniEngine", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(wWidth, wHeight, "MiniEngine", NULL, NULL);
 
     if (!window) {
         std::cerr << "Failed to create GLFW window." << std::endl;
@@ -151,70 +155,79 @@ int main() {
     ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
     
     Material lightSrcMat(&lightSrcShader);
+
+    glm::vec3 pointLightColors[] = {
+        glm::vec3(1.0f, 0.6f, 0.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f),
+        glm::vec3(1.0f, 1.0f, 0.0f),
+        glm::vec3(0.2f, 0.2f, 1.0f)
+    };
     
     std::vector<LightSource> lightSorces = {
         // Directional light 1
         LightSource(
-            new Transform(glm::vec3(0.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(0.05f, 0.05f, 0.05f),
-            glm::vec3(0.2f, 0.2f, 0.2f)
+            new Transform(glm::vec3(0.0f), glm::quatLookAt(glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.2f)),
+            glm::vec3(0.3f, 0.24f, 0.14f),
+            glm::vec3(0.7f, 0.42f, 0.26f),
+            glm::vec3(0.5f, 0.5f, 0.5f)
         ),
         // Point light 1
         LightSource(
             new Transform(glm::vec3(0.7f, 0.2f, 2.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-            glm::vec3(0.1f, 0.1f, 0.1f) * 0.1f,
-            glm::vec3(0.1f, 0.1f, 0.1f),
-            glm::vec3(0.1f, 0.1f, 0.1f),
+            pointLightColors[0] * 0.1f,
+            pointLightColors[0],
+            pointLightColors[0],
             1.0f,
-            0.14f,
-            0.07f
+            0.09f,
+            0.032f
         ),
         // Point light 2
         LightSource(
             new Transform(glm::vec3(2.3f, -3.3f, -4.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-            glm::vec3(0.1f, 0.1f, 0.1f) * 0.1f,
-            glm::vec3(0.1f, 0.1f, 0.1f),
-            glm::vec3(0.1f, 0.1f, 0.1f),
+            pointLightColors[1] * 0.1f,
+            pointLightColors[1],
+            pointLightColors[1],
             1.0f,
-            0.14f,
-            0.07f
+            0.09f,
+            0.032f
         ),
         // Point light 3
         LightSource(
             new Transform(glm::vec3(-4.0f, 2.0f, -12.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-            glm::vec3(0.1f, 0.1f, 0.1f) * 0.1f,
-            glm::vec3(0.1f, 0.1f, 0.1f),
-            glm::vec3(0.1f, 0.1f, 0.1f),
+            pointLightColors[2] * 0.1f,
+            pointLightColors[2],
+            pointLightColors[2],
             1.0f,
-            0.22f,
-            0.2f
+            0.09f,
+            0.032f
         ),
         // Point light 4
         LightSource(
             new Transform(glm::vec3(0.0f, 0.0f, -3.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-            glm::vec3(0.3f, 0.1f, 0.1f) * 0.1f,
-            glm::vec3(0.3f, 0.1f, 0.1f),
-            glm::vec3(0.3f, 0.1f, 0.1f),
+            pointLightColors[3] * 0.1f,
+            pointLightColors[3],
+            pointLightColors[3],
             1.0f,
-            0.14f,
-            0.07f
+            0.09f,
+            0.032f
         ),
         // Spot light
         LightSource(
             mainCamera->transform,
             glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(1.0f, 1.0f, 1.0f),
-            glm::vec3(1.0f, 1.0f, 1.0f),
+            glm::vec3(0.8f, 0.8f, 0.0f),
+            glm::vec3(0.8f, 0.8f, 0.0f),
             1.0f,
             0.09f,
             0.032f,
-            10.0f,
-            15.0f
+            12.5f,
+            13.0f
         )
     };
 
-    lightSorces[0].transform->lookAt(glm::vec3(-0.2f, -1.0f, -0.3f));
+    glm::vec3 bgColor = glm::vec3(0.75f, 0.52f, 0.3f);
+
+    i32 lightTest = 5;
     
     // Core loop
     while (!glfwWindowShouldClose(window)) {
@@ -222,18 +235,20 @@ int main() {
 
         processInput(window);
 
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 M = glm::mat4(1.0f);
         
         mat.getShader()->use();
-        mat.getShader()->setMat4("P", mainCamera->projection(800, 600));
+        mat.getShader()->setMat4("P", mainCamera->projection(wWidth, wHeight));
         mat.getShader()->setMat4("V", mainCamera->transform->view());
         mat.getShader()->setVec3("camera.position", mainCamera->transform->position);
         mat.getShader()->setFloat("time", Time::current());
         
         for (i32 i = 0; i < lightSorces.size(); i++) {
+            // if (i != lightTest) continue;
+
             mat.getShader()->setInt("lights[" + std::to_string(i) + "].lightType", static_cast<i32>(lightSorces[i].type));
             mat.getShader()->setVec3("lights[" + std::to_string(i) + "].position", lightSorces[i].transform->position);
             mat.getShader()->setVec3("lights[" + std::to_string(i) + "].direction", lightSorces[i].direction());
@@ -260,18 +275,23 @@ int main() {
         }
         mat.unbind();
 
-        lightSrcMat.bind();
+
+        lightSrcMat.getShader()->use();
+        lightSrcMat.getShader()->setMat4("P", mainCamera->projection(wWidth, wHeight));
+        lightSrcMat.getShader()->setMat4("V", mainCamera->transform->view());
+
         for (i32 i = 0; i < lightSorces.size(); i++) {
+            // if (i != lightTest) continue;
+
             if (i == lightSorces.size() - 1)
                 continue;
             
             M = lightSorces[i].transform->model();
-            
-            lightSrcMat.getShader()->setMat4("P", mainCamera->projection(800, 600));
-            lightSrcMat.getShader()->setMat4("V", mainCamera->transform->view());
             lightSrcMat.getShader()->setMat4("M", M);
-
+            
             lightSrcMat.set<glm::vec3>("color", lightSorces[i].diffuse);
+
+            lightSrcMat.bind();
             
             mesh.getVAO().bind();
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);

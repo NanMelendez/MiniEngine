@@ -1,9 +1,10 @@
 #version 330 core
 
 #define MAX_LIGHT_SOURCES 24
-#define LIGHT_TYPE_DIRECTIONAL 0
-#define LIGHT_TYPE_POINT       1
-#define LIGHT_TYPE_SPOT        2
+#define INVALID_LIGHT_TYPE     0
+#define LIGHT_TYPE_DIRECTIONAL 1
+#define LIGHT_TYPE_POINT       2
+#define LIGHT_TYPE_SPOT        3
 
 in SHADER_DATA {
     vec3 position;
@@ -41,16 +42,6 @@ struct Camera {
     float zFar;
 };
 
-/*
-layout (std140) uniform _uCamera {
-    Camera camera;
-};
-
-layout (std 140) uniform _uLights {
-    Light lights[MAX_LIGHT_SOURCES];
-};
-*/
-
 uniform Material material;
 
 uniform Light lights[MAX_LIGHT_SOURCES];
@@ -87,11 +78,15 @@ vec3 calcPointLights(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 
     float dist = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * pow(dist, 2.0));
+    float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
 
     vec3 ambient = light.ambient * vec3(texture(material.diffuse, data.uv));
     vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, data.uv));
     vec3 specular = light.specular * spec * vec3(texture(material.specular, data.uv));
+
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
 
     return ambient + diffuse + specular;
 }
@@ -129,6 +124,9 @@ void main() {
     vec3 result = vec3(0.0);
 
     for (int i = 0; i < MAX_LIGHT_SOURCES; i++) {
+        if (lights[i].lightType == INVALID_LIGHT_TYPE)
+            continue;
+
         if (lights[i].lightType == LIGHT_TYPE_DIRECTIONAL)
             result += calcDirectionalLights(lights[i], norm, viewDir);
         if (lights[i].lightType == LIGHT_TYPE_POINT)

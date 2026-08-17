@@ -5,9 +5,9 @@
 
 namespace MiniEngine {
     enum class LightType : i32 {
-        DIRECTIONAL = 0,
-        POINT       = 1,
-        SPOT        = 2
+        DIRECTIONAL = 1,
+        POINT       = 2,
+        SPOT        = 3
     };
 
     class LightSource {
@@ -24,8 +24,8 @@ namespace MiniEngine {
         f32 linear;
         f32 quadratic;
 
-        f32 cutOff; // Outer CutOff
-        f32 outerCutOff; // Inner CutOff
+        f32 cutOff; // Inner CutOff
+        f32 outerCutOff; // Outer CutOff
 
         LightSource(Transform* transform, LightType type) : transform(transform), type(type) {
             ambient = glm::vec3(1.0f);
