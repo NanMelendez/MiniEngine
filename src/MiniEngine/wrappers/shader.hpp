@@ -485,8 +485,6 @@ namespace MiniEngine {
                 if (info.index == -1)
                     continue;
                 
-                GLint var;
-                
                 glGetActiveUniformBlockiv(shader.id, info.index, GL_UNIFORM_BLOCK_BINDING, &info.binding);
                 glGetActiveUniformBlockiv(shader.id, info.index, GL_UNIFORM_BLOCK_DATA_SIZE, &info.size);
                 glGetActiveUniformBlockiv(shader.id, info.index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &info.activeUniforms);
