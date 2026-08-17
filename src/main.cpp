@@ -84,12 +84,19 @@ void cursorPosCallback(GLFWwindow* window, f64 x, f64 y) {
 }
 
 void mouseButtonCallback(GLFWwindow* window, i32 button, i32 action, i32 mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
         if (action == GLFW_PRESS)
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         if (action == GLFW_RELEASE)
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
 }
+
+struct alignas(16) GlobalData {
+    glm::ivec2 resolution;
+    f32 time;
+    i32 frame;
+};
 
 int main() {
     // Window setup
@@ -131,18 +138,22 @@ int main() {
     UBO uboMatrices(2 * sizeof(glm::mat4));
     UBO uboCamera(sizeof(CameraRawData));
     UBO uboLights(MAX_LIGHT_SOURCES * sizeof(LightRawData));
+    UBO uboGlobal(sizeof(GlobalData));
 
     uboMatrices.linkBase(0);
     uboCamera.linkBase(1);
     uboLights.linkBase(2);
+    uboGlobal.linkBase(3);
 
     mainShader.linkUniformBlock("_uMatrices", 0);
     mainShader.linkUniformBlock("_uCamera", 1);
     mainShader.linkUniformBlock("_uLights", 2);
+    mainShader.linkUniformBlock("_uGlobal", 3);
 
     lightSrcShader.linkUniformBlock("_uMatrices", 0);
     lightSrcShader.linkUniformBlock("_uCamera", 1);
     lightSrcShader.linkUniformBlock("_uLights", 2);
+    lightSrcShader.linkUniformBlock("_uGlobal", 3);
 
     Mesh mesh = Prefabs::cube(Transform());
     Texture2D texDiffuse = Loader<Texture2D>::load("../assets/textures/container2.png");
@@ -248,6 +259,8 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         Time::update();
 
+        glfwSetWindowTitle(window, (std::string("MiniEngine") + " - FPS: " + std::to_string((i32)Time::getFPS())).c_str());
+
         processInput(window);
 
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
@@ -270,10 +283,15 @@ int main() {
         }
         uboLights.unbind();
 
+        uboGlobal.bind();
+        GlobalData globalRaw = { glm::ivec2(wWidth, wHeight), Time::now(), 0 };
+        uboGlobal.update(sizeof(GlobalData), &globalRaw, 0);
+        uboGlobal.unbind();
+
         glm::mat4 M = glm::mat4(1.0f);
         
         mat.getShader()->use();
-        mat.getShader()->setUniform("time", Time::current());
+        mat.getShader()->setUniform("time", Time::now());
         
         mat.bind();
         for (i32 i = 0; i < transforms.size(); i++) {

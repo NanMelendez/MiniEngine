@@ -15,6 +15,11 @@ layout (std140) uniform _uMatrices {
     mat4 V;
 };
 
+layout (std140) uniform _uGlobal {
+    ivec2 resolution;
+    float time;
+};
+
 uniform mat4 M;
 uniform mat3 mN;
 

@@ -52,7 +52,11 @@ layout (std140) uniform _uLights {
     Light lights[MAX_LIGHT_SOURCES];
 };
 
-uniform float time;
+layout (std140) uniform _uGlobal {
+    ivec2 resolution;
+    float time;
+};
+
 uniform float blinkOffset;
 
 float grayscale(vec3 color) {

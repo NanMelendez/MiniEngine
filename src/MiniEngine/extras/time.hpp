@@ -11,7 +11,7 @@ namespace MiniEngine {
             return deltaTime;
         }
         
-        static f32 current() {
+        static f32 now() {
             return currentFrame;
         }
 
