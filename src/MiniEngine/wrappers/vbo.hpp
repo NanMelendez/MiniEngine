@@ -31,6 +31,22 @@ namespace MiniEngine {
             glBufferData(GL_ARRAY_BUFFER, size, data, usage);
             unbind();
         }
+
+        void update(GLsizeiptr size, const GLvoid* data, GLintptr offset) const override final {
+            glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+        }
+        
+        void reallocate(GLsizeiptr size, const GLvoid* data) const override final {
+            reallocate(size, data, GL_STATIC_DRAW);
+        }
+
+        void reallocate(GLsizeiptr size, const GLvoid* data, GLenum usage) const {
+            if (isAllocated()) {
+                bind();
+                glBufferData(GL_ARRAY_BUFFER, size, data, usage);
+                unbind();
+            }
+        }
     };
 }
 

@@ -3,7 +3,28 @@
 
 #include "transform.hpp"
 
+#define MAX_LIGHT_SOURCES 24
+
 namespace MiniEngine {
+    struct alignas(16) LightRawData {
+        glm::vec3 position;
+        i32 lightType;
+        
+        glm::vec3 direction;
+        f32 constant;
+
+        glm::vec3 ambient;
+        f32 linear;
+
+        glm::vec3 diffuse;
+        f32 quadratic;
+
+        glm::vec3 specular;
+        f32 cutOff;
+
+        f32 outerCutOff;
+    };
+    
     enum class LightType : i32 {
         DIRECTIONAL = 1,
         POINT       = 2,
@@ -67,16 +88,22 @@ namespace MiniEngine {
         glm::vec3 direction() const {
             return transform->front();
         }
-
-        /*
-        f32 cutOff() const {
-            return glm::radians(glm::mix(spotAngle, 0.0f, spotBlend));
+        
+        LightRawData getRawData() {
+            return {
+                transform->position,
+                static_cast<i32>(type),
+                direction(),
+                constant,
+                ambient,
+                linear,
+                diffuse,
+                quadratic,
+                specular,
+                glm::cos(glm::radians(cutOff)),
+                glm::cos(glm::radians(outerCutOff))
+            };
         }
-
-        f32 outerCutOff() const {
-            return glm::radians(spotAngle);
-        }
-        */
     };
 }
 

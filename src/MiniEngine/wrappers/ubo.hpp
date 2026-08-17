@@ -39,6 +39,22 @@ namespace MiniEngine {
         void linkRange(i32 location, i32 offset, i32 range) const {
             glBindBufferRange(GL_UNIFORM_BUFFER, location, id, offset, range);
         }
+
+        void update(GLsizeiptr size, const GLvoid* data, GLintptr offset) const override final {
+            glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+        }
+        
+        void reallocate(GLsizeiptr size, const GLvoid* data) const override final {
+            reallocate(size, data, GL_STATIC_DRAW);
+        }
+
+        void reallocate(GLsizeiptr size, const GLvoid* data, GLenum usage) const {
+            if (isAllocated()) {
+                bind();
+                glBufferData(GL_UNIFORM_BUFFER, size, data, usage);
+                unbind();
+            }
+        }
     };
 }
 

@@ -44,8 +44,13 @@ struct Camera {
 
 uniform Material material;
 
-uniform Light lights[MAX_LIGHT_SOURCES];
-uniform Camera camera;
+layout (std140) uniform _uCamera {
+    Camera camera;
+};
+
+layout (std140) uniform _uLights {
+    Light lights[MAX_LIGHT_SOURCES];
+};
 
 uniform float time;
 uniform float blinkOffset;

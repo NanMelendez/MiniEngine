@@ -10,6 +10,7 @@
 #include "MiniEngine/world/light.hpp"
 #include "MiniEngine/extras/prefabs.hpp"
 #include "MiniEngine/world/material.hpp"
+#include "MiniEngine/wrappers/ubo.hpp"
 
 using namespace MiniEngine;
 
@@ -119,13 +120,35 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
+    glm::vec3 bgColor = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/main.frag");
+    ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
+
+    Material mat(&mainShader);
+    Material lightSrcMat(&lightSrcShader);
+
+    UBO uboMatrices(2 * sizeof(glm::mat4));
+    UBO uboCamera(sizeof(CameraRawData));
+    UBO uboLights(MAX_LIGHT_SOURCES * sizeof(LightRawData));
+
+    uboMatrices.linkBase(0);
+    uboCamera.linkBase(1);
+    uboLights.linkBase(2);
+
+    mainShader.linkUniformBlock("_uMatrices", 0);
+    mainShader.linkUniformBlock("_uCamera", 1);
+    mainShader.linkUniformBlock("_uLights", 2);
+
+    lightSrcShader.linkUniformBlock("_uMatrices", 0);
+    lightSrcShader.linkUniformBlock("_uCamera", 1);
+    lightSrcShader.linkUniformBlock("_uLights", 2);
+
     Mesh mesh = Prefabs::cube(Transform());
     Texture2D texDiffuse = Loader<Texture2D>::load("../assets/textures/container2.png");
     Texture2D texSpecular = Loader<Texture2D>::load("../assets/textures/container2_specular.png");
     Texture2D texEmissive = Loader<Texture2D>::load("../assets/textures/matrix.jpg");
-    ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/main.frag");
 
-    Material mat(&mainShader);
     mat.set<Texture2D*>("diffuse", &texDiffuse);
     mat.set<Texture2D*>("specular", &texSpecular);
     mat.set<Texture2D*>("emissive", &texEmissive);
@@ -151,10 +174,6 @@ int main() {
     std::vector<f32>blinkOffsets;
     for (i32 i = 0; i < transforms.size(); i++)
         blinkOffsets.push_back(glm::linearRand(0.0f, 100.0f));
-
-    ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
-    
-    Material lightSrcMat(&lightSrcShader);
 
     glm::vec3 pointLightColors[] = {
         glm::vec3(0.1f, 0.1f, 0.1f),
@@ -224,8 +243,6 @@ int main() {
             15.0f
         )
     };
-
-    glm::vec3 bgColor = glm::vec3(0.0f, 0.0f, 0.0f);
     
     // Core loop
     while (!glfwWindowShouldClose(window)) {
@@ -236,27 +253,28 @@ int main() {
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        uboMatrices.bind();
+        uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->projection(wWidth, wHeight)), 0);
+        uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->transform->view()), sizeof(glm::mat4));
+        uboMatrices.unbind();
+
+        uboCamera.bind();
+        CameraRawData cameraRaw = mainCamera->getRawData();
+        uboCamera.update(sizeof(CameraRawData), &cameraRaw, 0);
+        uboCamera.unbind();
+
+        uboLights.bind();
+        for (i32 i = 0; i < lightSorces.size(); i++) {
+            LightRawData lightRaw = lightSorces[i].getRawData();
+            uboLights.update(sizeof(LightRawData), &lightRaw, i * sizeof(LightRawData));
+        }
+        uboLights.unbind();
+
         glm::mat4 M = glm::mat4(1.0f);
         
         mat.getShader()->use();
-        mat.getShader()->setUniform("P", mainCamera->projection(wWidth, wHeight));
-        mat.getShader()->setUniform("V", mainCamera->transform->view());
         mat.getShader()->setUniform("camera.position", mainCamera->transform->position);
         mat.getShader()->setUniform("time", Time::current());
-        
-        for (i32 i = 0; i < lightSorces.size(); i++) {
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].lightType", static_cast<i32>(lightSorces[i].type));
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].position", lightSorces[i].transform->position);
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].direction", lightSorces[i].direction());
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].ambient", lightSorces[i].ambient);
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].diffuse", lightSorces[i].diffuse);
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].specular", lightSorces[i].specular);
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].constant", lightSorces[i].constant);
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].linear", lightSorces[i].linear);
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].quadratic", lightSorces[i].quadratic);
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].cutOff", glm::cos(glm::radians(lightSorces[i].cutOff)));
-            mat.getShader()->setUniform("lights[" + std::to_string(i) + "].outerCutOff", glm::cos(glm::radians(lightSorces[i].outerCutOff)));
-        }
         
         mat.bind();
         for (i32 i = 0; i < transforms.size(); i++) {
@@ -273,9 +291,6 @@ int main() {
 
 
         lightSrcMat.getShader()->use();
-        lightSrcMat.getShader()->setUniform("P", mainCamera->projection(wWidth, wHeight));
-        lightSrcMat.getShader()->setUniform("V", mainCamera->transform->view());
-
         for (i32 i = 0; i < lightSorces.size(); i++) {
             if (i == lightSorces.size() - 1)
                 continue;

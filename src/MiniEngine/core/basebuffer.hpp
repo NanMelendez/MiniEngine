@@ -17,6 +17,10 @@ namespace MiniEngine {
                     id = 0;
                 }
             }
+
+            virtual void update(GLsizeiptr size, const GLvoid* data, GLintptr offset) const = 0;
+
+            virtual void reallocate(GLsizeiptr size, const GLvoid* data) const = 0;
         };
     }
 }

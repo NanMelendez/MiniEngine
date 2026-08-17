@@ -4,6 +4,16 @@
 #include "transform.hpp"
 
 namespace MiniEngine {
+    struct alignas(16) CameraRawData {
+        glm::vec3 position;
+        glm::vec3 front;
+        f32 fov;
+        glm::vec3 right;
+        f32 zNear;
+        glm::vec3 up;
+        f32 zFar;
+    };
+    
     enum class CameraProjectionMode {
         PERSPECTIVE,
         ORTHOGRAPHIC
@@ -28,6 +38,18 @@ namespace MiniEngine {
             case CameraProjectionMode::ORTHOGRAPHIC:
                 return glm::ortho(0.0f, (f32)width, 0.0f, (f32)height, zNear, zFar);
             }
+        }
+
+        CameraRawData getRawData() const {
+            return {
+                transform->position,
+                transform->front(),
+                fov,
+                transform->right(),
+                zNear,
+                transform->up(),
+                zFar
+            };
         }
     };
 }
