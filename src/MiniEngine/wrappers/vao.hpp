@@ -13,10 +13,12 @@ namespace MiniEngine {
 
         void bind() const override final {
             glBindVertexArray(id);
+            currentlyUsedID = id;
         }
 
         void unbind() const override final {
             glBindVertexArray(0);
+            currentlyUsedID = 0;
         }
 
         void load() {
@@ -42,6 +44,13 @@ namespace MiniEngine {
         void disableIndex(GLuint idx) const {
             glDisableVertexAttribArray(idx);
         }
+
+        bool isCurrentlyInUse() const {
+            return currentlyUsedID == id && isAllocated();
+        }
+    
+    private:
+        inline static GLuint currentlyUsedID = 0;
     };
 }
 

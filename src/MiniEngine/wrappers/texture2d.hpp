@@ -26,13 +26,21 @@ namespace MiniEngine {
             glTexParameteri(GL_TEXTURE_2D, name, param);
         }
 
+        bool isCurrentlyInUse() const {
+            return currentlyUsedID == id && isAllocated();
+        }
+    
     private:
+        inline static GLuint currentlyUsedID = 0;
+        
         void bind() const override final {
             glBindTexture(GL_TEXTURE_2D, id);
+            currentlyUsedID = id;
         }
 
         void unbind() const override final {
             glBindTexture(GL_TEXTURE_2D, 0);
+            currentlyUsedID = 0;
         }
     };
 

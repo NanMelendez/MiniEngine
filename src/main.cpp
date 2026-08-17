@@ -273,7 +273,6 @@ int main() {
         glm::mat4 M = glm::mat4(1.0f);
         
         mat.getShader()->use();
-        mat.getShader()->setUniform("camera.position", mainCamera->transform->position);
         mat.getShader()->setUniform("time", Time::current());
         
         mat.bind();

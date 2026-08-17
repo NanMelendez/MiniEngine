@@ -14,10 +14,12 @@ namespace MiniEngine {
 
         void bind() const override final {
             glBindBuffer(GL_UNIFORM_BUFFER, id);
+            currentlyUsedID = id;
         }
 
         void unbind() const override final {
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            currentlyUsedID = 0;
         }
 
         void load(GLsizeiptr size, const GLvoid* data = NULL) override final {
@@ -55,6 +57,13 @@ namespace MiniEngine {
                 unbind();
             }
         }
+
+        bool isCurrentlyInUse() const {
+            return currentlyUsedID == id && isAllocated();
+        }
+    
+    private:
+        inline static GLuint currentlyUsedID = 0;
     };
 }
 

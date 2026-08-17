@@ -43,10 +43,12 @@ namespace MiniEngine {
 
         void use() const {
             glUseProgram(id);
+            currentlyUsedID = id;
         }
 
         void unuse() const {
             glUseProgram(0);
+            currentlyUsedID = 0;
         }
         
         void clear() override final {
@@ -315,6 +317,10 @@ namespace MiniEngine {
             glUniformBlockBinding(id, glGetUniformBlockIndex(id, std::string(name).c_str()), location);
         }
 
+        bool isCurrentlyInUse() const {
+            return currentlyUsedID == id && isAllocated();
+        }
+
     private:
         std::string vertexSource;
         std::string fragmentSource;
@@ -322,6 +328,8 @@ namespace MiniEngine {
 
         std::unordered_map<std::string, UniformInfo> uniforms;
         std::unordered_map<std::string, UniformBlockInfo> uniformBlocks;
+
+        inline static GLuint currentlyUsedID = 0;
         
         const UniformInfo* getUniform(std::string_view name) const {
             auto it= uniforms.find(std::string(name));
