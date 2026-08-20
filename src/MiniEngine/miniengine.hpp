@@ -9,5 +9,6 @@
 #include "mesh/prefabs.hpp"
 #include "resources/material.hpp"
 #include "wrappers/ubo.hpp"
+#include "wrappers/fbo.hpp"
 
 #endif

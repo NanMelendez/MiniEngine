@@ -8,6 +8,8 @@ i32 lastX, lastY;
 
 i32 wWidth = 800, wHeight = 600;
 
+FBO mainFBO;
+
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -32,6 +34,7 @@ void framebufferSizeCallback(GLFWwindow* window, i32 width, i32 height) {
     glViewport(0, 0, width, height);
     wWidth = width;
     wHeight = height;
+    mainFBO.resize(width, height);
 }
 
 void scrollCallback(GLFWwindow* window, f64 xOffset, f64 yOffset) {
@@ -116,11 +119,15 @@ int main() {
 
     glm::vec3 bgColor = glm::vec3(0.0f, 0.0f, 0.0f);
 
+    mainFBO.load(wWidth, wHeight);
+
     ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/main.frag");
     ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
+    ShaderProgram fboShader = Loader<ShaderProgram>::load("../assets/shaders/fbo.vert", "../assets/shaders/fbo.frag");
 
     Material mat(&mainShader);
     Material lightSrcMat(&lightSrcShader);
+    Material fboMat(&fboShader);
 
     UBO uboMatrices(2 * sizeof(glm::mat4));
     UBO uboCamera(sizeof(CameraRawData));
@@ -142,6 +149,8 @@ int main() {
     lightSrcShader.linkUniformBlock("_uLights", 2);
     lightSrcShader.linkUniformBlock("_uGlobal", 3);
 
+    fboShader.linkUniformBlock("_uGlobal", 3);
+
     Mesh mesh = Prefabs::cube(Transform());
     Texture2D texDiffuse = Loader<Texture2D>::load("../assets/textures/container2.png");
     Texture2D texSpecular = Loader<Texture2D>::load("../assets/textures/container2_specular.png");
@@ -152,7 +161,7 @@ int main() {
     mat.set<Texture2D*>("emissive", &texEmissive);
     mat.set<f32>("emissiveStrenght", 1.0f);
     mat.set<f32>("shininess", 32.0f);
-
+    
     std::vector<Transform> transforms = {
         Transform(glm::vec3(0.0f, 0.0f, 0.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
         Transform(glm::vec3(2.0f, 5.0f, -15.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
@@ -251,9 +260,10 @@ int main() {
         processInput(window);
         glfwPollEvents();
 
+        mainFBO.bind();
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        
         uboMatrices.bind();
         uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->projection(wWidth, wHeight)), 0);
         uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->transform->view()), sizeof(glm::mat4));
@@ -275,11 +285,10 @@ int main() {
         GlobalData globalRaw = { glm::ivec2(wWidth, wHeight), Time::now(), 0 };
         uboGlobal.update(sizeof(GlobalData), &globalRaw, 0);
         uboGlobal.unbind();
-
+        
         glm::mat4 M = glm::mat4(1.0f);
         
         mat.getShader()->use();
-        mat.getShader()->setUniform("time", Time::now());
         
         mat.bind();
         for (i32 i = 0; i < transforms.size(); i++) {
@@ -310,6 +319,10 @@ int main() {
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
         }
         lightSrcMat.unbind();
+        
+        mainFBO.unbind();
+        glViewport(0, 0, wWidth, wHeight);
+        mainFBO.render(fboMat);
 
         glfwSwapBuffers(window);
     }

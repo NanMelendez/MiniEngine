@@ -29,6 +29,50 @@ namespace MiniEngine {
         bool isCurrentlyInUse() const {
             return currentlyUsedID == id && isAllocated();
         }
+
+        void allocate(i32 width, i32 height, i32 nChannels = 4, bool generateMipmap = true, const std::vector<std::pair<GLenum, GLint>>& params = {{GL_TEXTURE_WRAP_S, GL_REPEAT}, {GL_TEXTURE_WRAP_T, GL_REPEAT}, {GL_TEXTURE_MIN_FILTER, GL_LINEAR}, {GL_TEXTURE_MAG_FILTER, GL_LINEAR}}) {
+            clear();
+            clearImageData();
+
+            glGenTextures(1, &id);
+
+            imData = { NULL, nChannels, width, height };
+
+            GLenum internalFormat;
+            GLenum dataFormat;
+
+            switch (imData.nChannels) {
+            case 3:
+                internalFormat = dataFormat = GL_RGB;
+                break;
+            case 4:
+                internalFormat = dataFormat = GL_RGBA;
+                break;
+            default:
+                internalFormat = dataFormat = GL_RED;
+                break;
+            }
+
+            bind();
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, imData.width, imData.height, 0, dataFormat, GL_UNSIGNED_BYTE, imData.data);
+            if (generateMipmap)
+                glGenerateMipmap(GL_TEXTURE_2D);
+
+            for (const std::pair<GLenum, GLint>& param : params)
+                setTextureParameter(param.first, param.second);
+            
+            unbind();
+        }
+
+        void upload(u8* data, bool generateMipmap = true, GLenum internalFormat = GL_RGBA, GLenum dataFormat = GL_RGBA) {
+            imData.data = data;
+            
+            bind();
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, imData.width, imData.height, 0, dataFormat, GL_UNSIGNED_BYTE, imData.data);
+            if (generateMipmap)
+                glGenerateMipmap(GL_TEXTURE_2D);
+            unbind();
+        }
     
     private:
         inline static GLuint currentlyUsedID = 0;

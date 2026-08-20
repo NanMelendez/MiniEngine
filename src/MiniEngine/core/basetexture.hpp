@@ -27,12 +27,6 @@ namespace MiniEngine {
             }
 
             virtual void setTextureParameter(GLenum name, const GLint param) const = 0;
-            
-            /*
-            virtual void load(const ImageData& imData, const std::vector<std::pair<GLenum, GLint>>& params) = 0;
-
-            virtual void reload(const ImageData& imData, const std::vector<std::pair<GLenum, GLint>>& params) = 0;
-            */
 
             void clear() override final {
                 if (isAllocated()) {
@@ -45,6 +39,10 @@ namespace MiniEngine {
                 i32 maxSlots = 0;
                 glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxSlots);
                 return maxSlots;
+            }
+
+            const ImageData& getImData() const {
+                return imData;
             }
 
         protected:
