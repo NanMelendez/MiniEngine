@@ -1,6 +1,42 @@
 {
 	"version": "2.0.0",
 	"tasks": [
+        // Pre-compiled header tasks
+        {
+            "type": "cppbuild",
+            "label": "PCH Compile (Debug)",
+            "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+            "args": [
+                "-std=c++20",
+                "-I${workspaceFolder}/include",
+                "-g",
+                "${workspaceFolder}/src/MiniEngine/pch.hpp"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "type": "cppbuild",
+            "label": "PCH Compile (Release)",
+            "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+            "args": [
+                "-std=c++20",
+                "-I${workspaceFolder}/include",
+                "-O3",
+                "${workspaceFolder}/src/MiniEngine/pch.hpp"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        // Main build tasks
 		{
             "type": "cppbuild",
             "label": "C/C++: g++.exe build active file (Debug)",
@@ -23,6 +59,7 @@
             "problemMatcher": [
                 "$gcc"
             ],
+            "dependsOn": "PCH Compile (Debug)",
             "group": {
                 "kind": "build",
                 "isDefault": false
@@ -52,6 +89,7 @@
             "problemMatcher": [
                 "$gcc"
             ],
+            "dependsOn": "PCH Compile (Release)",
             "group": {
                 "kind": "build",
                 "isDefault": false
