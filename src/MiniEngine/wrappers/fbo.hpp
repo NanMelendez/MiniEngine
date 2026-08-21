@@ -38,8 +38,6 @@ namespace MiniEngine {
             
             unbind();
             renderBuffer.unbind();
-
-            std::cout << "Size: (" << colorBuffer.getImData().width << " x " << colorBuffer.getImData().height << ")\n";
         }
 
         void resize(i32 width, i32 height) {

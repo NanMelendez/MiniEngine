@@ -7,22 +7,22 @@ namespace MiniEngine {
     template<>
     class Loader<ShaderProgram> {
     public:
-        static ShaderProgram load(std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath = "", const std::vector<std::pair<std::string, GLuint>>& bindings = {}) {
+        static ShaderProgram load(std::string_view path, const std::vector<std::pair<std::string, GLuint>>& bindings = {}) {
             ShaderProgram shader;
 
             shader.id = glCreateProgram();
 
-            reload(shader, vertexPath, fragmentPath, geometryPath, bindings);
+            reload(shader, path, bindings);
 
             return shader;
         }
 
-        static void reload(ShaderProgram& shader, std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath = "", const std::vector<std::pair<std::string, GLuint>>& bindings = {}) {
+        static void reload(ShaderProgram& shader, std::string_view path, const std::vector<std::pair<std::string, GLuint>>& bindings = {}) {
             shader.uniforms.clear();
             shader.uniformBlocks.clear();
             
-            constructSources(shader, vertexPath, fragmentPath, geometryPath);
-
+            constructSources(shader, std::string(path));
+            
             GLuint vertexID = createShader(GL_VERTEX_SHADER, shader.vertexSource.c_str());
             GLuint fragmentID = createShader(GL_FRAGMENT_SHADER, shader.fragmentSource.c_str());
             GLuint geometryID = 0;
@@ -49,20 +49,31 @@ namespace MiniEngine {
         }
 
     private:
-        static void constructSources(ShaderProgram& shader, std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath = "") {
-            std::ifstream vertexFile(std::string(vertexPath).c_str());
-            std::getline(vertexFile, shader.vertexSource, '\0');
-            vertexFile.close();
+        static void constructSources(ShaderProgram& shader, const std::string& path) {
+            ShaderType type = ShaderType::VERTEX;
 
-            std::ifstream fragmentFile(std::string(fragmentPath).c_str());
-            std::getline(fragmentFile, shader.fragmentSource, '\0');
-            fragmentFile.close();
+            std::ifstream file(path);
+            std::stringstream ssSources[3];
+            std::string line;
 
-            if (!geometryPath.empty()) {
-                std::ifstream geometryFile(std::string(geometryPath).c_str());
-                std::getline(geometryFile, shader.geometrySource, '\0');
-                geometryFile.close();
+            while (std::getline(file, line)) {
+                if (line.find("#type") != std::string::npos) {
+                    if (line.find("vertex") != std::string::npos)
+                        type = ShaderType::VERTEX;
+                    if (line.find("fragment") != std::string::npos)
+                        type = ShaderType::FRAGMENT;
+                    if (line.find("geometry") != std::string::npos)
+                        type = ShaderType::GEOMETRY;
+                }
+                else
+                    ssSources[static_cast<i32>(type)] << line << '\n';
             }
+
+            shader.vertexSource = ssSources[0].str();
+            shader.fragmentSource = ssSources[1].str();
+            shader.geometrySource = ssSources[2].str();
+
+            file.close();
         }
 
         static GLuint createShader(GLenum type, const i8* src) {

@@ -1,3 +1,5 @@
+#type vertex
+
 #version 330 core
 
 layout (location = 0) in vec3 position;
@@ -29,4 +31,26 @@ void main() {
     data.uv = uv;
 
     gl_Position = P * V * vec4(data.position, 1.0);
+}
+
+#type fragment
+
+#version 330 core
+
+in SHADER_DATA {
+    vec3 position;
+    vec3 normal;
+    vec2 uv;
+} data;
+
+out vec4 fColor;
+
+struct Material {
+    vec3 color;
+};
+
+uniform Material material;
+
+void main() {
+    fColor = vec4(material.color, 1.0);
 }

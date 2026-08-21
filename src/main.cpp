@@ -120,10 +120,10 @@ int main() {
     glm::vec3 bgColor = glm::vec3(0.0f, 0.0f, 0.0f);
 
     mainFBO.load(wWidth, wHeight);
-
-    ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/main.frag");
-    ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/main.vert", "../assets/shaders/lightSrc.frag");
-    ShaderProgram fboShader = Loader<ShaderProgram>::load("../assets/shaders/fbo.vert", "../assets/shaders/fbo.frag");
+    
+    ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.glsl");
+    ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/lightSrc.glsl");
+    ShaderProgram fboShader = Loader<ShaderProgram>::load("../assets/shaders/fbo.glsl");
 
     Material mat(&mainShader);
     Material lightSrcMat(&lightSrcShader);
@@ -149,6 +149,9 @@ int main() {
     lightSrcShader.linkUniformBlock("_uLights", 2);
     lightSrcShader.linkUniformBlock("_uGlobal", 3);
 
+    fboShader.linkUniformBlock("_uMatrices", 0);
+    fboShader.linkUniformBlock("_uCamera", 1);
+    fboShader.linkUniformBlock("_uLights", 2);
     fboShader.linkUniformBlock("_uGlobal", 3);
 
     Mesh mesh = Prefabs::cube(Transform());
@@ -319,7 +322,7 @@ int main() {
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
         }
         lightSrcMat.unbind();
-        
+
         mainFBO.unbind();
         glViewport(0, 0, wWidth, wHeight);
         mainFBO.render(fboMat);
