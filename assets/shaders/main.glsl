@@ -44,7 +44,6 @@ layout (std140) uniform _uGlobal {
 
 // Vertex entry point
 // ===================
-
 void MainVertex(inout vec3 vertPosition) {
     vertPosition = vec3(M * vec4(vertPosition, 1.0));
     gl_Position = P * V * vec4(vertPosition, 1.0);

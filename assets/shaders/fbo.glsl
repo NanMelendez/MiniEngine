@@ -87,10 +87,6 @@ struct Material {
 
 uniform Material material;
 
-vec3 invert(vec3 color) {
-    return 1.0 - color;
-}
-
 // Fragment entry point
 // =====================
 void MainFragment(inout vec4 fragColor) {
