@@ -43,6 +43,8 @@ namespace MiniEngine {
         void resize(i32 width, i32 height) {
             bind();
 
+            resolution = glm::uvec2(width, height);
+
             colorBuffer.allocate(width, height, 4, false);
             colorBuffer.bind(0);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer.getID(), 0);
@@ -96,6 +98,10 @@ namespace MiniEngine {
             material.unbind();
 
             glEnable(GL_DEPTH_TEST);
+        }
+
+        glm::uvec2 getResolution() const {
+            return resolution;
         }
 
     private:

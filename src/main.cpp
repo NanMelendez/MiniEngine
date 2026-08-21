@@ -35,6 +35,8 @@ void framebufferSizeCallback(GLFWwindow* window, i32 width, i32 height) {
     wWidth = width;
     wHeight = height;
     mainFBO.resize(width, height);
+
+    std::cout << "Resolution: " << glm::to_string(mainFBO.getResolution()) << '\n';
 }
 
 void scrollCallback(GLFWwindow* window, f64 xOffset, f64 yOffset) {
@@ -264,6 +266,7 @@ int main() {
         glfwPollEvents();
 
         mainFBO.bind();
+        // glViewport(0, 0, wWidth, wHeight);
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
@@ -322,7 +325,7 @@ int main() {
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
         }
         lightSrcMat.unbind();
-
+        
         mainFBO.unbind();
         glViewport(0, 0, wWidth, wHeight);
         mainFBO.render(fboMat);
