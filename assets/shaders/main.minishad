@@ -1,0 +1,10 @@
+Shader "MyShader" {
+    Program {
+        Stage vertex {
+            // ...
+        }
+        Stage fragment {
+            // ...
+        }
+    }
+}

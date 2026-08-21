@@ -35,8 +35,6 @@ void framebufferSizeCallback(GLFWwindow* window, i32 width, i32 height) {
     wWidth = width;
     wHeight = height;
     mainFBO.resize(width, height);
-
-    std::cout << "Resolution: " << glm::to_string(mainFBO.getResolution()) << '\n';
 }
 
 void scrollCallback(GLFWwindow* window, f64 xOffset, f64 yOffset) {
@@ -294,15 +292,14 @@ int main() {
         
         glm::mat4 M = glm::mat4(1.0f);
         
-        mat.getShader()->use();
-        
-        mat.bind();
         for (i32 i = 0; i < transforms.size(); i++) {
-            M = transforms[i].model();
+            mat.set<f32>("blinkOffset", blinkOffsets[i]);
 
+            mat.bind();
+
+            M = transforms[i].model();
             mat.getShader()->setUniform("M", M);
             mat.getShader()->setUniform("mN", glm::mat3(glm::transpose(glm::inverse(M))));
-            mat.getShader()->setUniform("blinkOffset", blinkOffsets[i]);
 
             mesh.getVAO().bind();
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
@@ -314,12 +311,12 @@ int main() {
             if (i == lightSorces.size() - 1)
                 continue;
             
-            M = lightSorces[i].transform->model();
-            lightSrcMat.getShader()->setUniform("M", M);
-            
             lightSrcMat.set<glm::vec3>("color", lightSorces[i].diffuse);
 
             lightSrcMat.bind();
+
+            M = lightSorces[i].transform->model();
+            lightSrcMat.getShader()->setUniform("M", M);
             
             mesh.getVAO().bind();
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);

@@ -78,7 +78,8 @@ namespace MiniEngine {
 
             std::string matBase = "material.";
 
-            shader->use();
+            if (!shader->isCurrentlyInUse())
+                shader->use();
 
             for (const auto& [name, variable] : variables) {
                 std::visit([&](const auto& value) {

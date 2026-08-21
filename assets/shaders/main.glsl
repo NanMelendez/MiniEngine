@@ -1,10 +1,14 @@
 #type vertex
 
+// CPU-defined
+// ============
 #version 330 core
 
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
-layout (location = 2) in vec2 uv;
+// Vertex-exclusive definitions
+// =============================
+layout (location = 0) in vec3 _position;
+layout (location = 1) in vec3 _normal;
+layout (location = 2) in vec2 _uv;
 
 out SHADER_DATA {
     vec3 position;
@@ -12,32 +16,50 @@ out SHADER_DATA {
     vec2 uv;
 } data;
 
+uniform mat4 M;
+uniform mat3 mN;
+
+void MainVertex(inout vec3 vertPosition);
+
+void main() {
+    data.position = _position;
+    data.normal = mN * _normal;
+    data.uv = _uv;
+    MainVertex(data.position);
+}
+
+// Vertex-exclusive uniforms
+// ==========================
 layout (std140) uniform _uMatrices {
     mat4 P;
     mat4 V;
 };
 
+// Global uniforms
+// ================
 layout (std140) uniform _uGlobal {
     ivec2 resolution;
     float time;
 };
 
-uniform mat4 M;
-uniform mat3 mN;
+// Vertex entry point
+// ===================
 
-void main() {
-    data.position = vec3(M * vec4(position, 1.0));
-    data.normal = mN * normal;
-    data.uv = uv;
-
-    gl_Position = P * V * vec4(data.position, 1.0);
+void MainVertex(inout vec3 vertPosition) {
+    vertPosition = vec3(M * vec4(vertPosition, 1.0));
+    gl_Position = P * V * vec4(vertPosition, 1.0);
 }
 
 #type fragment
 
+// CPU-defined
+// ============
 #version 330 core
 
 #define MAX_LIGHT_SOURCES 24
+
+// Fragment-exclusive definitions
+// ===============================
 #define INVALID_LIGHT_TYPE     0
 #define LIGHT_TYPE_DIRECTIONAL 1
 #define LIGHT_TYPE_POINT       2
@@ -49,15 +71,7 @@ in SHADER_DATA {
     vec2 uv;
 } data;
 
-out vec4 fColor;
-
-struct Material {
-    sampler2D diffuse;
-    sampler2D specular;
-    sampler2D emissive;
-    float emissiveStrenght;
-    float shininess;
-};
+out vec4 _fColor;
 
 struct Light {
     vec3 position;
@@ -79,8 +93,15 @@ struct Camera {
     float zFar;
 };
 
-uniform Material material;
+void MainFragment(inout vec4 fragColor);
 
+void main() {
+    _fColor = vec4(0.0, 0.0, 0.0, 1.0);
+    MainFragment(_fColor);
+}
+
+// Fragment-exclusive uniforms
+// ============================
 layout (std140) uniform _uCamera {
     Camera camera;
 };
@@ -89,12 +110,25 @@ layout (std140) uniform _uLights {
     Light lights[MAX_LIGHT_SOURCES];
 };
 
+// Global uniforms
+// ================
 layout (std140) uniform _uGlobal {
     ivec2 resolution;
     float time;
 };
 
-uniform float blinkOffset;
+// User-defined code
+// ==================
+struct Material {
+    sampler2D diffuse;
+    sampler2D specular;
+    sampler2D emissive;
+    float emissiveStrenght;
+    float shininess;
+    float blinkOffset;
+};
+
+uniform Material material;
 
 float grayscale(vec3 color) {
     return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
@@ -163,7 +197,9 @@ vec3 calcSpotLights(Light light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     return ambient + diffuse + specular;
 }
 
-void main() {
+// Fragment entry point
+// =====================
+void MainFragment(inout vec4 fragColor) {
     vec3 norm = normalize(data.normal);
     vec3 viewDir = normalize(camera.position - data.position);
 
@@ -181,9 +217,9 @@ void main() {
             result += calcSpotLights(lights[i], norm, data.position, viewDir);
     }
     
-    vec3 emissive = texture(material.emissive, data.uv + vec2(0.0, 0.25 * time)).rgb * material.emissiveStrenght * (0.5 + 0.5 * sin(blinkOffset + (time * 2.0)));
+    vec3 emissive = texture(material.emissive, data.uv + vec2(0.0, 0.25 * time)).rgb * material.emissiveStrenght * (0.5 + 0.5 * sin(material.blinkOffset + (time * 2.0)));
 
     result += mix(emissive, vec3(0.0), ceil(grayscale(texture(material.specular, data.uv).rgb)));
 
-    fColor = vec4(result, 1.0);
+    fragColor = vec4(result, 1.0);
 }
