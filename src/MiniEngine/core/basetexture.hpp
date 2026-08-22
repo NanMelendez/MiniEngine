@@ -5,8 +5,17 @@
 
 namespace MiniEngine {
     namespace Core {
+        struct ImageDataDeleter {
+            void operator()(u8* data) const {
+                if (data)
+                    stbi_image_free(data);
+            }
+        };
+
+        using ImageDataPtr = std::unique_ptr<u8[], ImageDataDeleter>;
+
         struct ImageData {
-            u8* data = nullptr;
+            ImageDataPtr data = nullptr;
             i32 nChannels;
             i32 width = 0, height = 0, depth = 0;
         };
@@ -50,7 +59,7 @@ namespace MiniEngine {
 
             void clearImageData() {
                 if (imData.data) {
-                    free(imData.data);
+                    imData.data.reset();
                     imData.data = nullptr;
                 }
             }

@@ -54,7 +54,7 @@ namespace MiniEngine {
             }
 
             bind();
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, imData.width, imData.height, 0, dataFormat, GL_UNSIGNED_BYTE, imData.data);
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, imData.width, imData.height, 0, dataFormat, GL_UNSIGNED_BYTE, imData.data.get());
             if (generateMipmap)
                 glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -65,10 +65,10 @@ namespace MiniEngine {
         }
 
         void upload(u8* data, bool generateMipmap = true, GLenum internalFormat = GL_RGBA, GLenum dataFormat = GL_RGBA) {
-            imData.data = data;
+            imData.data.reset(data);
             
             bind();
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, imData.width, imData.height, 0, dataFormat, GL_UNSIGNED_BYTE, imData.data);
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, imData.width, imData.height, 0, dataFormat, GL_UNSIGNED_BYTE, imData.data.get());
             if (generateMipmap)
                 glGenerateMipmap(GL_TEXTURE_2D);
             unbind();

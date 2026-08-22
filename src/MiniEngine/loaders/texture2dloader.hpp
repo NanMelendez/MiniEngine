@@ -38,7 +38,7 @@ namespace MiniEngine {
             }
 
             texture.bind();
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texture.imData.width, texture.imData.height, 0, dataFormat, GL_UNSIGNED_BYTE, texture.imData.data);
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texture.imData.width, texture.imData.height, 0, dataFormat, GL_UNSIGNED_BYTE, texture.imData.data.get());
             glGenerateMipmap(GL_TEXTURE_2D);
             
             for (const std::pair<GLenum, GLint>& param : params)
@@ -51,13 +51,13 @@ namespace MiniEngine {
             static Core::ImageData fetchImageData(std::string_view path, bool flipVertically) {
                 Core::ImageData imData;
                 stbi_set_flip_vertically_on_load(flipVertically);
-                imData.data = stbi_load(std::string(path).c_str(), &imData.width, &imData.height, &imData.nChannels, 0);
+                imData.data.reset(stbi_load(std::string(path).c_str(), &imData.width, &imData.height, &imData.nChannels, 0));
 
                 if (imData.data == nullptr) {
                     std::cerr << "Failed to load texture at \"" << path << "\"" << std::endl;
 
                     // Create "error" texture placeholder
-                    imData.data = (u8*)malloc(sizeof(u8) * 3); // Because STB_Image uses malloc & free instead of the new & delete system
+                    imData.data.reset((u8*)malloc(sizeof(u8) * 3)); // Because STB_Image uses malloc & free instead of the new & delete system
                     imData.data[0] = 255;
                     imData.data[1] = 0;
                     imData.data[2] = 255;

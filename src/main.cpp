@@ -155,13 +155,13 @@ int main() {
     fboShader.linkUniformBlock("_uGlobal", 3);
 
     Mesh mesh = Prefabs::cube(Transform());
-    Texture2D texDiffuse = Loader<Texture2D>::load("../assets/textures/container2.png");
-    Texture2D texSpecular = Loader<Texture2D>::load("../assets/textures/container2_specular.png");
-    Texture2D texEmissive = Loader<Texture2D>::load("../assets/textures/matrix.jpg");
+    std::unique_ptr<Texture2D> texDiffuse = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/container2.png"));
+    std::unique_ptr<Texture2D> texSpecular = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/container2_specular.png"));
+    std::unique_ptr<Texture2D> texEmissive = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/matrix.jpg"));
 
-    mat.set<Texture2D*>("diffuse", &texDiffuse);
-    mat.set<Texture2D*>("specular", &texSpecular);
-    mat.set<Texture2D*>("emissive", &texEmissive);
+    mat.set<Texture2D*>("diffuse", texDiffuse.get());
+    mat.set<Texture2D*>("specular", texSpecular.get());
+    mat.set<Texture2D*>("emissive", texEmissive.get());
     mat.set<f32>("emissiveStrenght", 1.0f);
     mat.set<f32>("shininess", 32.0f);
     

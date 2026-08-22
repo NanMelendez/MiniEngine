@@ -17,8 +17,6 @@ namespace MiniEngine {
                 other.id = 0;
             }
 
-            virtual ~BaseObject() = default;
-
             BaseObject& operator=(BaseObject&& other) noexcept {
                 if (this != &other) {
                     id = other.id;
@@ -26,6 +24,8 @@ namespace MiniEngine {
                 }
                 return *this;
             }
+
+            virtual ~BaseObject() = default;
 
             GLuint getID() const { return id; }
 
