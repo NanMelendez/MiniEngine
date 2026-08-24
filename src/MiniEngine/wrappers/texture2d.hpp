@@ -73,9 +73,15 @@ namespace MiniEngine {
                 glGenerateMipmap(GL_TEXTURE_2D);
             unbind();
         }
+
+        const Core::ImageData& getImData() const {
+            return imData;
+        }
     
     private:
         inline static GLuint currentlyUsedID = 0;
+
+        Core::ImageData imData;
         
         void bind() const override final {
             glBindTexture(GL_TEXTURE_2D, id);
@@ -85,6 +91,13 @@ namespace MiniEngine {
         void unbind() const override final {
             glBindTexture(GL_TEXTURE_2D, 0);
             currentlyUsedID = 0;
+        }
+
+        void clearImageData() {
+            if (imData.data) {
+                imData.data.reset();
+                imData.data = nullptr;
+            }
         }
     };
 }

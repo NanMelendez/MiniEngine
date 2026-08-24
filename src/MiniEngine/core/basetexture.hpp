@@ -31,7 +31,7 @@ namespace MiniEngine {
             BaseTexture& operator=(BaseTexture&&) noexcept = default;
 
             ~BaseTexture() {
-                clearImageData();
+                // clearImageData();
                 clear();
             }
 
@@ -50,19 +50,23 @@ namespace MiniEngine {
                 return maxSlots;
             }
 
+            /*
             const ImageData& getImData() const {
                 return imData;
             }
+            */
 
         protected:
-            ImageData imData;
-
+            // ImageData imData;
+            
+            /*
             void clearImageData() {
                 if (imData.data) {
                     imData.data.reset();
                     imData.data = nullptr;
                 }
             }
+            */
 
             void useSlot(GLuint idx) const {
                 glActiveTexture(GL_TEXTURE0 + idx);

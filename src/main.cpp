@@ -6,7 +6,7 @@ Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::
 bool firstMouse = true;
 i32 lastX, lastY;
 
-i32 wWidth = 800, wHeight = 600;
+i32 wWidth = 1600, wHeight = 1200;
 
 FBO mainFBO;
 
