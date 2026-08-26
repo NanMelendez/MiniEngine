@@ -313,6 +313,13 @@ namespace MiniEngine {
                 glUniform1i(info->location, location);
         }
 
+        void setSamplerCube(std::string_view name, i32 location) const {
+            const UniformInfo* info = getUniform(name);
+
+            if (validateUniformPtr(info, GL_SAMPLER_CUBE))
+                glUniform1i(info->location, location);
+        }
+
         void linkUniformBlock(std::string_view name, u32 location) const {
             glUniformBlockBinding(id, glGetUniformBlockIndex(id, std::string(name).c_str()), location);
         }

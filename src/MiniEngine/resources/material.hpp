@@ -3,6 +3,8 @@
 
 #include "../wrappers/shader.hpp"
 #include "../wrappers/texture2d.hpp"
+// #include "../wrappers/cubemap.hpp"
+#include "../core/predefvars.hpp"
 
 namespace MiniEngine {
     using MaterialVarType = std::variant<
@@ -16,7 +18,8 @@ namespace MiniEngine {
         glm::mat2x3, glm::mat2x4,
         glm::mat3x2, glm::mat3x4,
         glm::mat4x2, glm::mat4x3,
-        Texture2D*
+        Texture2D* // ,
+        // Cubemap*
     >;
 
     class Material {
@@ -74,7 +77,7 @@ namespace MiniEngine {
         }
 
         void bind() const {
-            i32 texture2DCount = 0;
+            i32 samplerCount = 0;
 
             std::string matBase = "material.";
 
@@ -88,11 +91,19 @@ namespace MiniEngine {
                     if constexpr (std::is_same_v<T, Texture2D*>) {
                         if (!value) return;
 
-                        value->bind(texture2DCount);
-                        shader->setSampler2D(matBase + name, texture2DCount);
+                        value->bind(samplerCount);
+                        shader->setSampler2D(matBase + name, samplerCount);
 
-                        texture2DCount++;
+                        samplerCount++;
                     }
+                    /*else if constexpr (std::is_same_v<T, Cubemap*>) {
+                        if (!value) return;
+
+                        value->bind(samplerCount);
+                        shader->setSamplerCube(matBase + name, samplerCount + PREALLOCATED_SAMPLER_UNIFORMS);
+                        
+                        samplerCount++;
+                    }*/
                     else
                         shader->setUniform(matBase + name, value);
                 }, variable);
@@ -100,14 +111,14 @@ namespace MiniEngine {
         }
 
         void unbind() const {
-            i32 texture2DCount = 0;
+            i32 samplerCount = 0;
 
             for (const auto& [name, variable] : variables) {
                 if (std::holds_alternative<Texture2D*>(variable)) {
                     Texture2D* temp = std::get<Texture2D*>(variable);
                     if (temp)
-                        temp->unbind(texture2DCount);
-                    texture2DCount++;
+                        temp->unbind(samplerCount);
+                    samplerCount++;
                 }
             }
 
@@ -118,7 +129,7 @@ namespace MiniEngine {
         ShaderProgram* shader;
         std::unordered_map<std::string, MaterialVarType> variables;
 
-        MaterialVarType initDefault(UniformInfo info) const {
+        MaterialVarType initDefault(const UniformInfo& info) const {
             switch(info.type) {
             default:
             case GL_BOOL: return false;
@@ -144,6 +155,7 @@ namespace MiniEngine {
             case GL_FLOAT_MAT4x2: return glm::mat4x2(1.0f);
             case GL_FLOAT_MAT4x3: return glm::mat4x3(1.0f);
             case GL_SAMPLER_2D: return static_cast<Texture2D*>(nullptr);
+            // case GL_SAMPLER_CUBE: return static_cast<Cubemap*>(nullptr);
             }
         }
     };

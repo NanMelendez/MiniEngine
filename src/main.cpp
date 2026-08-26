@@ -154,6 +154,15 @@ int main() {
     fboShader.linkUniformBlock("_uLights", 2);
     fboShader.linkUniformBlock("_uGlobal", 3);
 
+    /*
+    std::unique_ptr<Texture2D> texCubemapXPos = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/right.jpg"));
+    std::unique_ptr<Texture2D> texCubemapXNeg = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/left.jpg"));
+    std::unique_ptr<Texture2D> texCubemapYPos = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/top.jpg"));
+    std::unique_ptr<Texture2D> texCubemapYNeg = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/bottom.jpg"));
+    std::unique_ptr<Texture2D> texCubemapZPos = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/front.jpg"));
+    std::unique_ptr<Texture2D> texCubemapZNeg = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/back.jpg"));
+    */
+
     Mesh mesh = Prefabs::cube(Transform());
     std::unique_ptr<Texture2D> texDiffuse = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/container2.png"));
     std::unique_ptr<Texture2D> texSpecular = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/container2_specular.png"));
@@ -271,6 +280,7 @@ int main() {
         uboMatrices.bind();
         uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->projection(wWidth, wHeight)), 0);
         uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->transform->view()), sizeof(glm::mat4));
+        // uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(glm::mat4(glm::mat3(mainCamera->transform->view()))), 2 * sizeof(glm::mat4));
         uboMatrices.unbind();
 
         uboCamera.bind();
