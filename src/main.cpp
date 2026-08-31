@@ -1,6 +1,7 @@
 #include "MiniEngine/miniengine.hpp"
 using namespace MiniEngine;
 
+#pragma region GlobalVariables
 Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)));
 
 bool firstMouse = true;
@@ -10,6 +11,14 @@ i32 wWidth = 1600, wHeight = 1200;
 
 FBO mainFBO;
 
+struct alignas(16) GlobalData {
+    glm::ivec2 resolution;
+    f32 time;
+    i32 frame;
+};
+#pragma endregion
+
+#pragma region Functions
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -81,14 +90,10 @@ void mouseButtonCallback(GLFWwindow* window, i32 button, i32 action, i32 mods) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 }
-
-struct alignas(16) GlobalData {
-    glm::ivec2 resolution;
-    f32 time;
-    i32 frame;
-};
+#pragma endregion
 
 int main() {
+#pragma region WindowInitialization
     // Window setup
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -116,18 +121,32 @@ int main() {
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+#pragma endregion
 
-    glm::vec3 bgColor = glm::vec3(0.0f, 0.0f, 0.0f);
+    SkyboxRenderer::initialize();
+
+    glm::vec3 bgColor = glm::vec3(1.0f, 2.0f, 2.0f);
 
     mainFBO.load(wWidth, wHeight);
     
     ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.glsl");
     ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/lightSrc.glsl");
     ShaderProgram fboShader = Loader<ShaderProgram>::load("../assets/shaders/fbo.glsl");
+    ShaderProgram skyboxShader = Loader<ShaderProgram>::load("../assets/shaders/skybox.glsl");
+
+    mainShader.use();
+    mainShader.setSamplerCube("environmentMap", 0);
+    lightSrcShader.use();
+    lightSrcShader.setSamplerCube("environmentMap", 0);
+    fboShader.use();
+    fboShader.setSamplerCube("environmentMap", 0);
+    skyboxShader.use();
+    skyboxShader.setSamplerCube("environmentMap", 0);
 
     Material mat(&mainShader);
     Material lightSrcMat(&lightSrcShader);
     Material fboMat(&fboShader);
+    Material skyboxMat(&skyboxShader);
 
     UBO uboMatrices(2 * sizeof(glm::mat4));
     UBO uboCamera(sizeof(CameraRawData));
@@ -153,15 +172,22 @@ int main() {
     fboShader.linkUniformBlock("_uCamera", 1);
     fboShader.linkUniformBlock("_uLights", 2);
     fboShader.linkUniformBlock("_uGlobal", 3);
-
-    /*
+    
     std::unique_ptr<Texture2D> texCubemapXPos = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/right.jpg"));
     std::unique_ptr<Texture2D> texCubemapXNeg = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/left.jpg"));
     std::unique_ptr<Texture2D> texCubemapYPos = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/top.jpg"));
     std::unique_ptr<Texture2D> texCubemapYNeg = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/bottom.jpg"));
     std::unique_ptr<Texture2D> texCubemapZPos = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/front.jpg"));
     std::unique_ptr<Texture2D> texCubemapZNeg = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/skybox1/back.jpg"));
-    */
+
+    std::unique_ptr<Cubemap> cubemap = std::make_unique<Cubemap>(Loader<Cubemap>::load({
+        { CubemapFace::X_POSITIVE, texCubemapXPos.get() },
+        { CubemapFace::X_NEGATIVE, texCubemapXNeg.get() },
+        { CubemapFace::Y_POSITIVE, texCubemapYPos.get() },
+        { CubemapFace::Y_NEGATIVE, texCubemapYNeg.get() },
+        { CubemapFace::Z_POSITIVE, texCubemapZPos.get() },
+        { CubemapFace::Z_NEGATIVE, texCubemapZNeg.get() }
+    }));
 
     Mesh mesh = Prefabs::cube(Transform());
     std::unique_ptr<Texture2D> texDiffuse = std::make_unique<Texture2D>(Loader<Texture2D>::load("../assets/textures/container2.png"));
@@ -194,6 +220,7 @@ int main() {
     for (i32 i = 0; i < transforms.size(); i++)
         blinkOffsets.push_back(glm::linearRand(0.0f, 100.0f));
 
+#pragma region LightSourcesSetup
     glm::vec3 pointLightColors[] = {
         glm::vec3(0.1f, 0.1f, 0.1f),
         glm::vec3(0.1f, 0.1f, 0.1f),
@@ -262,6 +289,7 @@ int main() {
             15.0f
         )
     };
+#pragma endregion
     
     // Core loop
     while (!glfwWindowShouldClose(window)) {
@@ -273,14 +301,12 @@ int main() {
         glfwPollEvents();
 
         mainFBO.bind();
-        // glViewport(0, 0, wWidth, wHeight);
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         uboMatrices.bind();
         uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->projection(wWidth, wHeight)), 0);
         uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->transform->view()), sizeof(glm::mat4));
-        // uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(glm::mat4(glm::mat3(mainCamera->transform->view()))), 2 * sizeof(glm::mat4));
         uboMatrices.unbind();
 
         uboCamera.bind();
@@ -301,6 +327,8 @@ int main() {
         uboGlobal.unbind();
         
         glm::mat4 M = glm::mat4(1.0f);
+
+        cubemap->bind(0);
         
         for (i32 i = 0; i < transforms.size(); i++) {
             mat.set<f32>("blinkOffset", blinkOffsets[i]);
@@ -332,6 +360,12 @@ int main() {
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
         }
         lightSrcMat.unbind();
+
+        uboMatrices.bind();
+        uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(glm::mat4(glm::mat3(mainCamera->transform->view()))), sizeof(glm::mat4));
+        uboMatrices.unbind();
+        SkyboxRenderer::draw(skyboxMat);
+        cubemap->unbind(0);
         
         mainFBO.unbind();
         glViewport(0, 0, wWidth, wHeight);

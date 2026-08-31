@@ -24,7 +24,6 @@ void main() {
 layout (std140) uniform _uMatrices {
     mat4 P;
     mat4 V;
-    mat4 cV; // Cubemap View
 };
 
 // Global uniforms
@@ -37,7 +36,7 @@ layout (std140) uniform _uGlobal {
 // Vertex entry point
 // ===================
 void MainVertex(inout vec3 vertPosition) {
-    gl_Position = (P * cV * vec4(vertPosition, 1.0)).xyww;
+    gl_Position = (P * V * vec4(vertPosition, 1.0)).xyww;
 }
 
 #type fragment
@@ -66,14 +65,10 @@ layout (std140) uniform _uGlobal {
 
 // User-defined code
 // ==================
-struct Material {
-    samplerCube diffuse;
-};
-
-uniform Material material;
+uniform samplerCube environmentMap;
 
 // Fragment entry point
 // =====================
 void MainFragment(inout vec4 fragColor) {
-    fragColor = texture(material.diffuse, data.uv);
+    fragColor = texture(environmentMap, data.position);
 }

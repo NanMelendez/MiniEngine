@@ -3,7 +3,7 @@
 
 #include "../wrappers/shader.hpp"
 #include "../wrappers/texture2d.hpp"
-// #include "../wrappers/cubemap.hpp"
+#include "../wrappers/cubemap.hpp"
 #include "../core/predefvars.hpp"
 
 namespace MiniEngine {
@@ -18,8 +18,8 @@ namespace MiniEngine {
         glm::mat2x3, glm::mat2x4,
         glm::mat3x2, glm::mat3x4,
         glm::mat4x2, glm::mat4x3,
-        Texture2D* // ,
-        // Cubemap*
+        Texture2D*,
+        Cubemap*
     >;
 
     class Material {
@@ -85,25 +85,27 @@ namespace MiniEngine {
                 shader->use();
 
             for (const auto& [name, variable] : variables) {
+                i32 slot = samplerCount + PREALLOCATED_SAMPLER_UNIFORMS;
+
                 std::visit([&](const auto& value) {
                     using T = std::decay_t<decltype(value)>;
 
                     if constexpr (std::is_same_v<T, Texture2D*>) {
                         if (!value) return;
 
-                        value->bind(samplerCount);
-                        shader->setSampler2D(matBase + name, samplerCount);
+                        value->bind(slot);
+                        shader->setSampler2D(matBase + name, slot);
 
                         samplerCount++;
                     }
-                    /*else if constexpr (std::is_same_v<T, Cubemap*>) {
+                    else if constexpr (std::is_same_v<T, Cubemap*>) {
                         if (!value) return;
 
-                        value->bind(samplerCount);
-                        shader->setSamplerCube(matBase + name, samplerCount + PREALLOCATED_SAMPLER_UNIFORMS);
+                        value->bind(slot);
+                        shader->setSamplerCube(matBase + name, slot);
                         
                         samplerCount++;
-                    }*/
+                    }
                     else
                         shader->setUniform(matBase + name, value);
                 }, variable);
@@ -155,7 +157,7 @@ namespace MiniEngine {
             case GL_FLOAT_MAT4x2: return glm::mat4x2(1.0f);
             case GL_FLOAT_MAT4x3: return glm::mat4x3(1.0f);
             case GL_SAMPLER_2D: return static_cast<Texture2D*>(nullptr);
-            // case GL_SAMPLER_CUBE: return static_cast<Cubemap*>(nullptr);
+            case GL_SAMPLER_CUBE: return static_cast<Cubemap*>(nullptr);
             }
         }
     };

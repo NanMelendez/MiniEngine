@@ -4,7 +4,6 @@
 #include "texture2d.hpp"
 #include "vao.hpp"
 #include "vbo.hpp"
-// #include "../resources/material.hpp"
 
 namespace MiniEngine {
     class Material;
@@ -22,11 +21,7 @@ namespace MiniEngine {
     public:
         template<typename T>
         friend class Loader;
-
-        Cubemap() {
-            meshLoad();
-        }
-
+        
         void bind(GLuint slot) const {
             useSlot(slot);
             bind();
@@ -48,79 +43,29 @@ namespace MiniEngine {
         void setFace(const std::pair<CubemapFace, Texture2D*>& face) {
             faces[face.first] = face.second;
             const Core::ImageData& imData = face.second->getImData();
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<i32>(face.first), 0, GL_RGB, imData.width, imData.height, 0, GL_RGB, GL_UNSIGNED_BYTE, imData.data.get());
-        }
 
-        void draw(const Material& material, i32 slot = 0) const {
-            glDepthFunc(GL_LEQUAL);
-            material.bind();
-            vao.bind();
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            vao.unbind();
-            material.unbind();
-            glDepthFunc(GL_LESS);
+            GLenum internalFormat;
+            GLenum dataFormat;
+
+            switch (imData.nChannels) {
+            case 3:
+                internalFormat = dataFormat = GL_RGB;
+                break;
+            case 4:
+                internalFormat = dataFormat = GL_RGBA;
+                break;
+            default:
+                internalFormat = dataFormat = GL_RED;
+                break;
+            }
+
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<i32>(face.first), 0, internalFormat, imData.width, imData.height, 0, dataFormat, GL_UNSIGNED_BYTE, imData.data.get());
         }
 
     private:
         std::unordered_map<CubemapFace, Texture2D*> faces;
 
-        VAO vao;
-        VBO vbo;
-
         inline static GLuint currentlyUsedID = 0;
-
-        inline static f32 vertices[108] = {
-            -1.0f,  1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
-
-            -1.0f, -1.0f,  1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f,  1.0f,
-            -1.0f, -1.0f,  1.0f,
-
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-            
-            -1.0f, -1.0f,  1.0f,
-            -1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f, -1.0f,  1.0f,
-            -1.0f, -1.0f,  1.0f,
-
-            -1.0f,  1.0f, -1.0f,
-             1.0f,  1.0f, -1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-            -1.0f,  1.0f,  1.0f,
-            -1.0f,  1.0f, -1.0f,
-
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f,  1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f,  1.0f,
-             1.0f, -1.0f,  1.0f
-        };
-
-        void meshLoad() {
-            vao.load(); vao.bind();
-            vbo.load(sizeof(vertices), vertices); vbo.bind();
-            vao.setAttribPointer(0, 3, 3 * sizeof(f32), (void*)0);
-            vao.enableIndex(0);
-            vao.unbind();
-            vbo.unbind();
-        }
 
         void bind() const override final {
             glBindTexture(GL_TEXTURE_CUBE_MAP, id);
