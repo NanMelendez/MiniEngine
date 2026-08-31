@@ -119,7 +119,13 @@ namespace MiniEngine {
                 if (std::holds_alternative<Texture2D*>(variable)) {
                     Texture2D* temp = std::get<Texture2D*>(variable);
                     if (temp)
-                        temp->unbind(samplerCount);
+                        temp->unbind(samplerCount + PREALLOCATED_SAMPLER_UNIFORMS);
+                    samplerCount++;
+                }
+                if (std::holds_alternative<Cubemap*>(variable)) {
+                    Cubemap* temp = std::get<Cubemap*>(variable);
+                    if (temp)
+                        temp->unbind(samplerCount + PREALLOCATED_SAMPLER_UNIFORMS);
                     samplerCount++;
                 }
             }
