@@ -7,6 +7,7 @@
 #include "loaders/texture2dloader.hpp"
 #include "mesh/prefabs.hpp"
 #include "rendering/skyboxrenderer.hpp"
+#include "rendering/meshrenderer.hpp"
 #include "resources/material.hpp"
 #include "world/camera.hpp"
 #include "world/light.hpp"

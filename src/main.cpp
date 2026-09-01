@@ -228,7 +228,7 @@ int main() {
         glm::vec3(0.3f, 0.1f, 0.1f)
     };
     
-    std::vector<LightSource> lightSorces = {
+    std::vector<LightSource> lightSources = {
         // Directional light 1
         LightSource(
             new Transform(glm::vec3(0.0f), glm::quatLookAt(glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.2f)),
@@ -315,8 +315,8 @@ int main() {
         uboCamera.unbind();
 
         uboLights.bind();
-        for (i32 i = 0; i < lightSorces.size(); i++) {
-            LightRawData lightRaw = lightSorces[i].getRawData();
+        for (i32 i = 0; i < lightSources.size(); i++) {
+            LightRawData lightRaw = lightSources[i].getRawData();
             uboLights.update(sizeof(LightRawData), &lightRaw, i * sizeof(LightRawData));
         }
         uboLights.unbind();
@@ -332,32 +332,17 @@ int main() {
         
         for (i32 i = 0; i < transforms.size(); i++) {
             mat.set<f32>("blinkOffset", blinkOffsets[i]);
-
-            mat.bind();
-
-            M = transforms[i].model();
-            mat.getShader()->setUniform("M", M);
-            mat.getShader()->setUniform("mN", glm::mat3(glm::transpose(glm::inverse(M))));
-
-            mesh.getVAO().bind();
-            glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
+            MeshRenderer::draw(mesh, mat, transforms[i]);
         }
         mat.unbind();
 
         lightSrcMat.getShader()->use();
-        for (i32 i = 0; i < lightSorces.size(); i++) {
-            if (i == lightSorces.size() - 1)
+        for (i32 i = 0; i < lightSources.size(); i++) {
+            if (i == lightSources.size() - 1)
                 continue;
             
-            lightSrcMat.set<glm::vec3>("color", lightSorces[i].diffuse);
-
-            lightSrcMat.bind();
-
-            M = lightSorces[i].transform->model();
-            lightSrcMat.getShader()->setUniform("M", M);
-            
-            mesh.getVAO().bind();
-            glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
+            lightSrcMat.set<glm::vec3>("color", lightSources[i].diffuse);
+            MeshRenderer::draw(mesh, lightSrcMat, *lightSources[i].transform);
         }
         lightSrcMat.unbind();
 
