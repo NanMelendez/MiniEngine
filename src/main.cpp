@@ -304,6 +304,7 @@ int main() {
         glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
+#pragma region MainUBOUpdate
         uboMatrices.bind();
         uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->projection(wWidth, wHeight)), 0);
         uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->transform->view()), sizeof(glm::mat4));
@@ -325,11 +326,9 @@ int main() {
         GlobalData globalRaw = { glm::ivec2(wWidth, wHeight), Time::now(), 0 };
         uboGlobal.update(sizeof(GlobalData), &globalRaw, 0);
         uboGlobal.unbind();
-        
-        glm::mat4 M = glm::mat4(1.0f);
+#pragma endregion
 
         cubemap->bind(0);
-        
         for (i32 i = 0; i < transforms.size(); i++) {
             mat.set<f32>("blinkOffset", blinkOffsets[i]);
             MeshRenderer::draw(mesh, mat, transforms[i]);
@@ -346,9 +345,12 @@ int main() {
         }
         lightSrcMat.unbind();
 
+#pragma region SecondaryUBOUpdate
         uboMatrices.bind();
         uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(glm::mat4(glm::mat3(mainCamera->transform->view()))), sizeof(glm::mat4));
         uboMatrices.unbind();
+#pragma endregion
+
         SkyboxRenderer::draw(skyboxMat);
         cubemap->unbind(0);
         
