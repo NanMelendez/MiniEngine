@@ -30,6 +30,10 @@ namespace MiniEngine {
 
         Camera(Transform* transform, f32 fov = 45.0f, f32 zNear = 0.1f, f32 zFar = 100.0f) : transform(transform), fov(fov), zNear(zNear), zFar(zFar) {}
 
+        glm::mat4 projection(glm::ivec2 resolution) const {
+            return projection(resolution.x, resolution.y);
+        }
+
         glm::mat4 projection(i32 width, i32 height) const {
             switch (projectionMode) {
             default:

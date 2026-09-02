@@ -1,133 +1,48 @@
 #include "MiniEngine/miniengine.hpp"
+#include "MiniEngine/window/window.hpp"
 using namespace MiniEngine;
 
 #pragma region GlobalVariables
-Camera* mainCamera = new Camera(new Transform(glm::vec3(0.0f, 0.0f, 3.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)));
-
-bool firstMouse = true;
-i32 lastX, lastY;
-
-i32 wWidth = 1600, wHeight = 1200;
-
-FBO mainFBO;
-
 struct alignas(16) GlobalData {
     glm::ivec2 resolution;
     f32 time;
-    i32 frame;
 };
 #pragma endregion
 
 #pragma region Functions
-void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+void processInput(const Window& win) {
+    GLFWwindow* native = win.getNative();
+    Camera* camera = win.getActiveCamera();
+
+    if (glfwGetKey(native, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(native, true);
     
     f32 velocity = Time::delta() * 2.5f;
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        mainCamera->transform->position += mainCamera->transform->front() * velocity;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        mainCamera->transform->position -= mainCamera->transform->front() * velocity;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        mainCamera->transform->position -= mainCamera->transform->right() * velocity;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        mainCamera->transform->position += mainCamera->transform->right() * velocity;
-    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-        mainCamera->transform->position += mainCamera->transform->up() * velocity;
-    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-        mainCamera->transform->position -= mainCamera->transform->up() * velocity;
+    if (glfwGetKey(native, GLFW_KEY_W) == GLFW_PRESS)
+        camera->transform->position += camera->transform->front() * velocity;
+    if (glfwGetKey(native, GLFW_KEY_S) == GLFW_PRESS)
+        camera->transform->position -= camera->transform->front() * velocity;
+    if (glfwGetKey(native, GLFW_KEY_A) == GLFW_PRESS)
+        camera->transform->position -= camera->transform->right() * velocity;
+    if (glfwGetKey(native, GLFW_KEY_D) == GLFW_PRESS)
+        camera->transform->position += camera->transform->right() * velocity;
+    if (glfwGetKey(native, GLFW_KEY_Z) == GLFW_PRESS)
+        camera->transform->position += camera->transform->up() * velocity;
+    if (glfwGetKey(native, GLFW_KEY_X) == GLFW_PRESS)
+        camera->transform->position -= camera->transform->up() * velocity;
 }
 
-void framebufferSizeCallback(GLFWwindow* window, i32 width, i32 height) {
-    glViewport(0, 0, width, height);
-    wWidth = width;
-    wHeight = height;
-    mainFBO.resize(width, height);
-}
-
-void scrollCallback(GLFWwindow* window, f64 xOffset, f64 yOffset) {
-    mainCamera->fov -= yOffset;
-
-    if (mainCamera->fov < 0.1f)
-        mainCamera->fov = 0.1f;
-    if (mainCamera->fov > 89.0f)
-        mainCamera->fov = 89.0f;
-}
-
-void cursorPosCallback(GLFWwindow* window, f64 x, f64 y) {
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-        if (firstMouse) {
-            lastX = x;
-            lastY = y;
-            firstMouse = false;
-            return;
-        }
-
-        f32 xOffset = x - lastX;
-        f32 yOffset = lastY - y;
-
-        lastX = x;
-        lastY = y;
-
-        xOffset *= 0.005f;
-        yOffset *= 0.005f;
-        
-        glm::quat yaw = glm::angleAxis(-xOffset, glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::quat pitch = glm::angleAxis(yOffset, glm::vec3(1.0f, 0.0f, 0.0f));
-
-        mainCamera->transform->rotation = glm::normalize(yaw * mainCamera->transform->rotation * pitch);
-    }
-    else
-        firstMouse = true;
-}
-
-void mouseButtonCallback(GLFWwindow* window, i32 button, i32 action, i32 mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        if (action == GLFW_PRESS)
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        if (action == GLFW_RELEASE)
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
-}
 #pragma endregion
 
 int main() {
 #pragma region WindowInitialization
-    // Window setup
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow* window = glfwCreateWindow(wWidth, wHeight, "MiniEngine", NULL, NULL);
-
-    if (!window) {
-        std::cerr << "Failed to create GLFW window." << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-    glfwSetScrollCallback(window, scrollCallback);
-    glfwSetCursorPosCallback(window, cursorPosCallback);
-    glfwSetMouseButtonCallback(window, mouseButtonCallback);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    Window window;
+    if (!window.init(800, 600, "MiniEngine", glm::vec3(0.1f, 0.2f, 0.2f)))
+        return 1;
 #pragma endregion
 
     SkyboxRenderer::initialize();
-
-    glm::vec3 bgColor = glm::vec3(1.0f, 2.0f, 2.0f);
-
-    mainFBO.load(wWidth, wHeight);
     
     ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.glsl");
     ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/lightSrc.glsl");
@@ -278,7 +193,7 @@ int main() {
         ),
         // Spot light
         LightSource(
-            mainCamera->transform,
+            window.getActiveCamera()->transform,
             glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(1.0f, 1.0f, 1.0f),
             glm::vec3(1.0f, 1.0f, 1.0f),
@@ -292,26 +207,26 @@ int main() {
 #pragma endregion
     
     // Core loop
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window.getNative())) {
         Time::update();
 
-        glfwSetWindowTitle(window, (std::string("MiniEngine") + " - FPS: " + std::to_string((i32)Time::getFPS())).c_str());
+        window.setTitle((std::string("MiniEngine") + " - FPS: " + std::to_string((i32)Time::getFPS())).c_str());
 
         processInput(window);
         glfwPollEvents();
 
-        mainFBO.bind();
-        glClearColor(bgColor.r, bgColor.g, bgColor.b, 1.0f);
+        window.getFBO()->bind();
+        glClearColor(window.bgColor.r, window.bgColor.g, window.bgColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 #pragma region MainUBOUpdate
         uboMatrices.bind();
-        uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->projection(wWidth, wHeight)), 0);
-        uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(mainCamera->transform->view()), sizeof(glm::mat4));
+        uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(window.getActiveCamera()->projection(window.getResolution())), 0);
+        uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(window.getActiveCamera()->transform->view()), sizeof(glm::mat4));
         uboMatrices.unbind();
 
         uboCamera.bind();
-        CameraRawData cameraRaw = mainCamera->getRawData();
+        CameraRawData cameraRaw = window.getActiveCamera()->getRawData();
         uboCamera.update(sizeof(CameraRawData), &cameraRaw, 0);
         uboCamera.unbind();
 
@@ -323,7 +238,7 @@ int main() {
         uboLights.unbind();
 
         uboGlobal.bind();
-        GlobalData globalRaw = { glm::ivec2(wWidth, wHeight), Time::now(), 0 };
+        GlobalData globalRaw = { window.getResolution(), Time::now() };
         uboGlobal.update(sizeof(GlobalData), &globalRaw, 0);
         uboGlobal.unbind();
 #pragma endregion
@@ -347,18 +262,19 @@ int main() {
 
 #pragma region SecondaryUBOUpdate
         uboMatrices.bind();
-        uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(glm::mat4(glm::mat3(mainCamera->transform->view()))), sizeof(glm::mat4));
+        uboMatrices.update(sizeof(glm::mat4), glm::value_ptr(glm::mat4(glm::mat3(window.getActiveCamera()->transform->view()))), sizeof(glm::mat4));
         uboMatrices.unbind();
 #pragma endregion
 
         SkyboxRenderer::draw(skyboxMat);
         cubemap->unbind(0);
         
-        mainFBO.unbind();
-        glViewport(0, 0, wWidth, wHeight);
-        mainFBO.render(fboMat);
+        window.getFBO()->unbind();
+        glViewport(0, 0, window.getResolution().x, window.getResolution().y);
+        // mainFBO.render(fboMat);
+        window.getFBO()->render(fboMat);
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window.getNative());
     }
 
     return 0;
