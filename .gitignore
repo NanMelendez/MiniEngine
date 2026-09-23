@@ -73,6 +73,7 @@ Testing/
 !/lib/
 !/lib/**
 !/*.dll
+!/assets/models/**
 
 # Custom not allowed stuff
 .VSCodeCounter/
