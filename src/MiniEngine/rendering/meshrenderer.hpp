@@ -8,10 +8,10 @@
 namespace MiniEngine {
     class MeshRenderer {
     public:
-        static void draw(const Mesh& mesh, const Material& mat, const Transform& transform) {
+        static void draw(const Mesh& mesh, const Material& mat, const Transform& transform, const MaterialInstance* matInstance = nullptr) {
             glm::mat4 M = transform.model();
 
-            mat.bind();
+            mat.bind(matInstance);
             mat.getShader()->setUniform("M", M);
             mat.getShader()->setUniform("mN", glm::mat3(glm::transpose(glm::inverse(M))));
 
@@ -19,7 +19,7 @@ namespace MiniEngine {
             glDrawElements(GL_TRIANGLES, mesh.getEBO().getCount(), GL_UNSIGNED_INT, 0);
             mesh.getVAO().unbind();
 
-            mat.unbind();
+            mat.unbind(matInstance);
         }
     };
 }

@@ -38,11 +38,11 @@ void processInput(const Window& win) {
 int main() {
 #pragma region WindowInitialization
     Window window;
-    if (!window.init(800, 600, "MiniEngine", glm::vec3(0.1f, 0.2f, 0.2f)))
+    if (!window.init(1920, 1080, "MiniEngine", glm::vec3(0.1f, 0.1f, 0.1f)))
         return 1;
 #pragma endregion
 
-    SkyboxRenderer::initialize();
+    // SkyboxRenderer::initialize();
     
     ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.glsl");
     ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/lightSrc.glsl");
@@ -144,6 +144,7 @@ int main() {
     };
     
     std::vector<LightSource> lightSources = {
+        /*
         // Directional light 1
         LightSource(
             new Transform(glm::vec3(0.0f), glm::quatLookAt(glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.2f)),
@@ -203,6 +204,7 @@ int main() {
             10.0f,
             15.0f
         )
+        */
     };
 #pragma endregion
     
@@ -266,7 +268,7 @@ int main() {
         uboMatrices.unbind();
 #pragma endregion
 
-        SkyboxRenderer::draw(skyboxMat);
+        // SkyboxRenderer::draw(skyboxMat);
         cubemap->unbind(0);
         
         window.getFBO()->unbind();

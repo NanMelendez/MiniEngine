@@ -7,166 +7,258 @@
 #include "../core/predefvars.hpp"
 
 namespace MiniEngine {
-    using MaterialVarType = std::variant<
-        bool,
-        i32, u32,
-        f32,
-        glm::vec2, glm::ivec2, glm::uvec2,
-        glm::vec3, glm::ivec3, glm::uvec3,
-        glm::vec4, glm::ivec4, glm::uvec4,
-        glm::mat2, glm::mat3, glm::mat4,
-        glm::mat2x3, glm::mat2x4,
-        glm::mat3x2, glm::mat3x4,
-        glm::mat4x2, glm::mat4x3,
-        Texture2D*,
-        Cubemap*
-    >;
+	using MaterialVarType = std::variant<
+		bool,
+		i32, u32,
+		f32,
+		glm::vec2, glm::ivec2, glm::uvec2,
+		glm::vec3, glm::ivec3, glm::uvec3,
+		glm::vec4, glm::ivec4, glm::uvec4,
+		glm::mat2, glm::mat3, glm::mat4,
+		glm::mat2x3, glm::mat2x4,
+		glm::mat3x2, glm::mat3x4,
+		glm::mat4x2, glm::mat4x3,
+		Texture2D*,
+		Cubemap*
+	>;
 
-    class Material {
-    public:
-        Material(ShaderProgram* shader = nullptr) {
-            setShader(shader);
-        }
+	class Material;
 
-        void setShader(ShaderProgram* shader) {
-            variables.clear();
+	class MaterialInstance {
+	public:
+		friend class Material;
 
-            this->shader = shader;
+		MaterialInstance() {}
 
-            if (!shader) return;
+		MaterialInstance(const MaterialInstance&) = delete;
+		MaterialInstance& operator=(const MaterialInstance&) = delete;
 
-            for (const auto& [name, info] : shader->getUniformList()) {
-                u64 pos = name.find("material.");
-                
-                if (name.starts_with("material."))
-                    variables.emplace(name.substr(9), initDefault(info));
-            }
-        }
+		MaterialInstance(MaterialInstance&& matInstance) noexcept : variables(matInstance.variables), mat(matInstance.mat) {
+			matInstance.variables.clear();
+			matInstance.mat = nullptr;
+		}
 
-        const ShaderProgram* getShader() const {
-            return shader;
-        }
+		MaterialInstance& operator=(MaterialInstance&& matInstance) noexcept {
+			variables = matInstance.variables;
+			mat = matInstance.mat;
+			matInstance.variables.clear();
+			matInstance.mat = nullptr;
 
-        template<typename T>
-        const T* get(std::string_view name) const {
-            auto it = variables.find(std::string(name));
+			return *this;
+		}
 
-            if (it == variables.end()) return nullptr;
+		~MaterialInstance();
 
-            if constexpr (std::is_pointer_v<T>)
-                return std::get_if<T>(it->second);
-            else
-                return std::get_if<T>(&it->second);
-        }
+		template<typename T>
+		const T* get(std::string_view name) const {
+			auto it = variables.find(std::string(name));
 
-        template<typename T>
-        void set(std::string_view name, const T& value) {
-            auto it = variables.find(std::string(name));
+			if (it == variables.end()) return nullptr;
 
-            if (it == variables.end()) {
-                std::cerr << "Could not find variable \"" << name << "\"\n";
-                return;
-            }
+			if constexpr (std::is_pointer_v<T>)
+				return std::get_if<T>(it->second);
+			else
+				return std::get_if<T>(&it->second);
+		}
 
-            if (!std::holds_alternative<T>(it->second)) {
-                std::cerr << "Type mismatch for variable \"" << name << "\"\n";
-                return;
-            }
+		template<typename T>
+		void set(std::string_view name, const T& value) {
+			auto it = variables.find(std::string(name));
 
-            it->second = value;
-        }
+			if (it == variables.end()) {
+				std::cerr << "Could not find variable \"" << name << "\"\n";
+				return;
+			}
 
-        void bind() const {
-            i32 samplerCount = 0;
+			if (!std::holds_alternative<T>(it->second)) {
+				std::cerr << "Type mismatch for variable \"" << name << "\"\n";
+				return;
+			}
 
-            std::string matBase = "material.";
+			it->second = value;
+		}
 
-            if (!shader->isCurrentlyInUse())
-                shader->use();
+	private:
+		std::unordered_map<std::string, MaterialVarType> variables;
+		Material* mat = nullptr;
+	};
 
-            for (const auto& [name, variable] : variables) {
-                i32 slot = samplerCount + PREALLOCATED_SAMPLER_UNIFORMS;
+	class Material {
+	public:
+		friend class MaterialInstance;
 
-                std::visit([&](const auto& value) {
-                    using T = std::decay_t<decltype(value)>;
+		Material(ShaderProgram* shader = nullptr) {
+			setShader(shader);
+		}
 
-                    if constexpr (std::is_same_v<T, Texture2D*>) {
-                        if (!value) return;
+		void setShader(ShaderProgram* shader) {
+			variables.clear();
 
-                        value->bind(slot);
-                        shader->setSampler2D(matBase + name, slot);
+			this->shader = shader;
 
-                        samplerCount++;
-                    }
-                    else if constexpr (std::is_same_v<T, Cubemap*>) {
-                        if (!value) return;
+			if (!shader) return;
 
-                        value->bind(slot);
-                        shader->setSamplerCube(matBase + name, slot);
-                        
-                        samplerCount++;
-                    }
-                    else
-                        shader->setUniform(matBase + name, value);
-                }, variable);
-            }
-        }
+			for (const auto& [name, info] : shader->getUniformList()) {
+				u64 pos = name.find("material.");
+				
+				if (name.starts_with("material."))
+					variables.emplace(name.substr(9), initDefault(info));
+			}
 
-        void unbind() const {
-            i32 samplerCount = 0;
+			for (MaterialInstance* matInstance : instances)
+				matInstance->variables = variables;
+		}
 
-            for (const auto& [name, variable] : variables) {
-                if (std::holds_alternative<Texture2D*>(variable)) {
-                    Texture2D* temp = std::get<Texture2D*>(variable);
-                    if (temp)
-                        temp->unbind(samplerCount + PREALLOCATED_SAMPLER_UNIFORMS);
-                    samplerCount++;
-                }
-                if (std::holds_alternative<Cubemap*>(variable)) {
-                    Cubemap* temp = std::get<Cubemap*>(variable);
-                    if (temp)
-                        temp->unbind(samplerCount + PREALLOCATED_SAMPLER_UNIFORMS);
-                    samplerCount++;
-                }
-            }
+		const ShaderProgram* getShader() const {
+			return shader;
+		}
 
-            shader->unuse();
-        }
-        
-    private:
-        ShaderProgram* shader;
-        std::unordered_map<std::string, MaterialVarType> variables;
+		template<typename T>
+		const T* get(std::string_view name) const {
+			auto it = variables.find(std::string(name));
 
-        MaterialVarType initDefault(const UniformInfo& info) const {
-            switch(info.type) {
-            default:
-            case GL_BOOL: return false;
-            case GL_INT: return 0;
-            case GL_UNSIGNED_INT: return 0u;
-            case GL_FLOAT: return 0.0f;
-            case GL_FLOAT_VEC2: return glm::vec2(0.0f);
-            case GL_INT_VEC2: return glm::ivec2(0);
-            case GL_UNSIGNED_INT_VEC2: return glm::uvec2(0u);
-            case GL_FLOAT_VEC3: return glm::vec3(0.0f);
-            case GL_INT_VEC3: return glm::ivec3(0);
-            case GL_UNSIGNED_INT_VEC3: return glm::uvec3(0u);
-            case GL_FLOAT_VEC4: return glm::vec4(0.0f);
-            case GL_INT_VEC4: return glm::ivec4(0);
-            case GL_UNSIGNED_INT_VEC4: return glm::uvec4(0u);
-            case GL_FLOAT_MAT2: return glm::mat2(1.0f);
-            case GL_FLOAT_MAT3: return glm::mat3(1.0f);
-            case GL_FLOAT_MAT4: return glm::mat4(1.0f);
-            case GL_FLOAT_MAT2x3: return glm::mat2x3(1.0f);
-            case GL_FLOAT_MAT2x4: return glm::mat2x4(1.0f);
-            case GL_FLOAT_MAT3x2: return glm::mat3x2(1.0f);
-            case GL_FLOAT_MAT3x4: return glm::mat3x4(1.0f);
-            case GL_FLOAT_MAT4x2: return glm::mat4x2(1.0f);
-            case GL_FLOAT_MAT4x3: return glm::mat4x3(1.0f);
-            case GL_SAMPLER_2D: return static_cast<Texture2D*>(nullptr);
-            case GL_SAMPLER_CUBE: return static_cast<Cubemap*>(nullptr);
-            }
-        }
-    };
+			if (it == variables.end()) return nullptr;
+
+			if constexpr (std::is_pointer_v<T>)
+				return std::get_if<T>(it->second);
+			else
+				return std::get_if<T>(&it->second);
+		}
+
+		template<typename T>
+		void set(std::string_view name, const T& value) {
+			auto it = variables.find(std::string(name));
+
+			if (it == variables.end()) {
+				std::cerr << "Could not find variable \"" << name << "\"\n";
+				return;
+			}
+
+			if (!std::holds_alternative<T>(it->second)) {
+				std::cerr << "Type mismatch for variable \"" << name << "\"\n";
+				return;
+			}
+
+			it->second = value;
+		}
+
+		MaterialInstance* generateInstance() {
+			MaterialInstance* matInstance = new MaterialInstance;
+			registerInstance(matInstance);
+			return matInstance;
+		}
+
+		void bind(const MaterialInstance* matInstance = nullptr) const {
+			i32 samplerCount = 0;
+
+			std::string matBase = "material.";
+
+			if (!shader->isCurrentlyInUse())
+				shader->use();
+
+			const std::unordered_map<std::string, MaterialVarType>* selectedVariabeleMap = matInstance ? &matInstance->variables : &variables;
+
+			for (const auto& [name, variable] : *selectedVariabeleMap) {
+				i32 slot = samplerCount + PREALLOCATED_SAMPLER_UNIFORMS;
+
+				std::visit([&](const auto& value) {
+					using T = std::decay_t<decltype(value)>;
+
+					if constexpr (std::is_same_v<T, Texture2D*>) {
+						if (!value) return;
+
+						value->bind(slot);
+						shader->setSampler2D(matBase + name, slot);
+
+						samplerCount++;
+					}
+					else if constexpr (std::is_same_v<T, Cubemap*>) {
+						if (!value) return;
+
+						value->bind(slot);
+						shader->setSamplerCube(matBase + name, slot);
+						
+						samplerCount++;
+					}
+					else
+						shader->setUniform(matBase + name, value);
+				}, variable);
+			}
+		}
+
+		void unbind(const MaterialInstance* matInstance = nullptr) const {
+			i32 samplerCount = 0;
+			
+			const std::unordered_map<std::string, MaterialVarType>* selectedVariabeleMap = matInstance ? &matInstance->variables : &variables;
+
+			for (const auto& [name, variable] : *selectedVariabeleMap){
+				if (std::holds_alternative<Texture2D*>(variable)) {
+					Texture2D* temp = std::get<Texture2D*>(variable);
+					if (temp)
+						temp->unbind(samplerCount + PREALLOCATED_SAMPLER_UNIFORMS);
+					samplerCount++;
+				}
+				if (std::holds_alternative<Cubemap*>(variable)) {
+					Cubemap* temp = std::get<Cubemap*>(variable);
+					if (temp)
+						temp->unbind(samplerCount + PREALLOCATED_SAMPLER_UNIFORMS);
+					samplerCount++;
+				}
+			}
+
+			shader->unuse();
+		}
+		
+	private:
+		ShaderProgram* shader;
+		std::unordered_map<std::string, MaterialVarType> variables;
+		std::unordered_set<MaterialInstance*> instances;
+
+		MaterialVarType initDefault(const UniformInfo& info) const {
+			switch(info.type) {
+			default:
+			case GL_BOOL: return false;
+			case GL_INT: return 0;
+			case GL_UNSIGNED_INT: return 0u;
+			case GL_FLOAT: return 0.0f;
+			case GL_FLOAT_VEC2: return glm::vec2(0.0f);
+			case GL_INT_VEC2: return glm::ivec2(0);
+			case GL_UNSIGNED_INT_VEC2: return glm::uvec2(0u);
+			case GL_FLOAT_VEC3: return glm::vec3(0.0f);
+			case GL_INT_VEC3: return glm::ivec3(0);
+			case GL_UNSIGNED_INT_VEC3: return glm::uvec3(0u);
+			case GL_FLOAT_VEC4: return glm::vec4(0.0f);
+			case GL_INT_VEC4: return glm::ivec4(0);
+			case GL_UNSIGNED_INT_VEC4: return glm::uvec4(0u);
+			case GL_FLOAT_MAT2: return glm::mat2(1.0f);
+			case GL_FLOAT_MAT3: return glm::mat3(1.0f);
+			case GL_FLOAT_MAT4: return glm::mat4(1.0f);
+			case GL_FLOAT_MAT2x3: return glm::mat2x3(1.0f);
+			case GL_FLOAT_MAT2x4: return glm::mat2x4(1.0f);
+			case GL_FLOAT_MAT3x2: return glm::mat3x2(1.0f);
+			case GL_FLOAT_MAT3x4: return glm::mat3x4(1.0f);
+			case GL_FLOAT_MAT4x2: return glm::mat4x2(1.0f);
+			case GL_FLOAT_MAT4x3: return glm::mat4x3(1.0f);
+			case GL_SAMPLER_2D: return static_cast<Texture2D*>(nullptr);
+			case GL_SAMPLER_CUBE: return static_cast<Cubemap*>(nullptr);
+			}
+		}
+
+		void registerInstance(MaterialInstance* instance) {
+			instance->variables = variables;
+			instance->mat = this;
+			instances.insert(instance);
+		}
+
+		void unregisterInstance(MaterialInstance* instance) {
+			instances.erase(instance);
+		}
+	};
+
+	MaterialInstance::~MaterialInstance() {
+		if (mat)
+				mat->unregisterInstance(this);
+	}
 }
 
 #endif
