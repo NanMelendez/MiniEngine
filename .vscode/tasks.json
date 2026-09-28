@@ -50,6 +50,7 @@
                 "${workspaceFolder}/src/\\*.cpp",
                 "${workspaceFolder}/src/\\*.c",
                 "-lglfw3dll",
+                "-lassimp", // Should be lassimpd but I'm not including it due to large file size
                 "-o",
                 "${workspaceFolder}/MiniEngine.exe"
             ],
@@ -80,6 +81,7 @@
                 "${workspaceFolder}/src/\\*.cpp",
                 "${workspaceFolder}/src/\\*.c",
                 "-lglfw3dll",
+                "-lassimp",
                 "-o",
                 "${workspaceFolder}/MiniEngine.exe"
             ],

@@ -24,4 +24,9 @@
 #include <glm/gtx/string_cast.hpp>
 #include <stb_image.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/Scene.h>
+#include <assimp/postprocess.h>
+
+
 #endif

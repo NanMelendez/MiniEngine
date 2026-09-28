@@ -2,6 +2,20 @@
 #include "MiniEngine/window/window.hpp"
 using namespace MiniEngine;
 
+#pragma region Miscelaneous
+class SceneObject {
+public:
+    SceneObject(const std::string& name, Transform* transform, MaterialInstance* matInstance, Mesh* mesh) : name(name), transform(transform), matInstance(matInstance), mesh(mesh) {}
+
+    std::string name;
+    Transform* transform;
+    MaterialInstance* matInstance;
+    Mesh* mesh;
+
+private:
+};
+#pragma endregion
+
 #pragma region GlobalVariables
 struct alignas(16) GlobalData {
     glm::ivec2 resolution;
@@ -42,7 +56,7 @@ int main() {
         return 1;
 #pragma endregion
 
-    // SkyboxRenderer::initialize();
+    SkyboxRenderer::initialize();
     
     ShaderProgram mainShader = Loader<ShaderProgram>::load("../assets/shaders/main.glsl");
     ShaderProgram lightSrcShader = Loader<ShaderProgram>::load("../assets/shaders/lightSrc.glsl");
@@ -114,25 +128,32 @@ int main() {
     mat.set<Texture2D*>("emissive", texEmissive.get());
     mat.set<f32>("emissiveStrenght", 1.0f);
     mat.set<f32>("shininess", 64.0f);
-    
-    std::vector<Transform> transforms = {
-        Transform(glm::vec3(0.0f, 0.0f, 0.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
-        Transform(glm::vec3(2.0f, 5.0f, -15.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
-        Transform(glm::vec3(-1.5f, -2.2f, -2.5f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
-        Transform(glm::vec3(-3.8f, -2.0f, -12.3f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
-        Transform(glm::vec3(2.4f, -0.4f, -3.5f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
-        Transform(glm::vec3(-1.7f, 3.0f, -7.5f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
-        Transform(glm::vec3(1.3f, -2.0f, -2.5f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
-        Transform(glm::vec3(1.5f, 2.0f, -2.5f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
-        Transform(glm::vec3(1.5f, 0.2f, -1.5f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
-        Transform(glm::vec3(-1.3f, 1.0f, -1.5f), glm::identity<glm::quat>(), glm::vec3(1.0f))
-    };
-    for (i32 i = 0; i < transforms.size(); i++) {
-        transforms[i].rotate(glm::angleAxis(20.0f * i, glm::normalize(glm::vec3(1.0f, 0.3f, 0.5f))));
-    }
 
+    std::vector<glm::vec3> positions = {
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(2.0f, 5.0f, -15.0f), 
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f, 2.0f, -2.5f),
+        glm::vec3(1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f) 
+    };
+
+    std::vector<SceneObject*> objects;
+    for (i32 i = 0; i < positions.size(); i++) {
+        objects.push_back(new SceneObject(
+            "Object",
+            new Transform(positions[i], glm::angleAxis(20.0f * i, glm::normalize(glm::vec3(1.0f, 0.3f, 0.5f))), glm::vec3(1.0f)),
+            mat.generateInstance(),
+            &mesh
+        ));
+    }
+    
     std::vector<f32>blinkOffsets;
-    for (i32 i = 0; i < transforms.size(); i++)
+    for (i32 i = 0; i < objects.size(); i++)
         blinkOffsets.push_back(glm::linearRand(0.0f, 100.0f));
 
 #pragma region LightSourcesSetup
@@ -201,9 +222,9 @@ int main() {
 #pragma endregion
 
         cubemap->bind(0);
-        for (i32 i = 0; i < transforms.size(); i++) {
+        for (i32 i = 0; i < objects.size(); i++) {
             mat.set<f32>("blinkOffset", blinkOffsets[i]);
-            MeshRenderer::draw(mesh, mat, transforms[i]);
+            MeshRenderer::draw(mesh, mat, *objects[i]->transform);
         }
         mat.unbind();
 
@@ -220,7 +241,7 @@ int main() {
         uboMatrices.unbind();
 #pragma endregion
 
-        // SkyboxRenderer::draw(skyboxMat);
+        SkyboxRenderer::draw(skyboxMat);
         cubemap->unbind(0);
         
         window.getFBO()->unbind();
