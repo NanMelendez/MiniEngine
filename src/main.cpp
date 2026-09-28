@@ -113,7 +113,7 @@ int main() {
     mat.set<Texture2D*>("specular", texSpecular.get());
     mat.set<Texture2D*>("emissive", texEmissive.get());
     mat.set<f32>("emissiveStrenght", 1.0f);
-    mat.set<f32>("shininess", 32.0f);
+    mat.set<f32>("shininess", 64.0f);
     
     std::vector<Transform> transforms = {
         Transform(glm::vec3(0.0f, 0.0f, 0.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)),
@@ -136,75 +136,30 @@ int main() {
         blinkOffsets.push_back(glm::linearRand(0.0f, 100.0f));
 
 #pragma region LightSourcesSetup
-    glm::vec3 pointLightColors[] = {
-        glm::vec3(0.1f, 0.1f, 0.1f),
-        glm::vec3(0.1f, 0.1f, 0.1f),
-        glm::vec3(0.1f, 0.1f, 0.1f),
-        glm::vec3(0.3f, 0.1f, 0.1f)
-    };
-    
     std::vector<LightSource> lightSources = {
-        /*
-        // Directional light 1
         LightSource(
-            new Transform(glm::vec3(0.0f), glm::quatLookAt(glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.2f)),
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(0.05f, 0.05f, 0.05f),
-            glm::vec3(0.2f, 0.2f, 0.2f)
+            new Transform(
+                glm::vec3(0.0f, 5.0f, 0.0f),
+                glm::quatLookAt(glm::normalize(glm::vec3(-0.2f, -1.0f,-0.2f)), glm::vec3(0.0f, 1.0f, 0.0f)),
+                glm::vec3(0.2f)
+            ),
+            glm::vec3(0.25f, 0.25f, 0.25f),
+            glm::vec3(0.7f, 0.7f, 0.7f),
+            glm::vec3(1.0f, 1.0f, 1.0f)
         ),
-        // Point light 1
         LightSource(
-            new Transform(glm::vec3(0.7f, 0.2f, 2.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-            pointLightColors[0] * 0.1f,
-            pointLightColors[0],
-            pointLightColors[0],
+            new Transform(
+                glm::vec3(.5f, .8f, 0.5f),
+                glm::identity<glm::quat>(),
+                glm::vec3(0.2f)
+            ),
+            glm::vec3(1.0f, 0.7f, 0.0f),
+            glm::vec3(1.0f, 0.7f, 0.0f),
+            glm::vec3(0.72f, 0.72f, 0.72f),
             1.0f,
-            0.14f,
-            0.07f
-        ),
-        // Point light 2
-        LightSource(
-            new Transform(glm::vec3(2.3f, -3.3f, -4.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-            pointLightColors[1] * 0.1f,
-            pointLightColors[1],
-            pointLightColors[1],
-            1.0f,
-            0.14f,
-            0.07f
-        ),
-        // Point light 3
-        LightSource(
-            new Transform(glm::vec3(-4.0f, 2.0f, -12.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-            pointLightColors[2] * 0.1f,
-            pointLightColors[2],
-            pointLightColors[2],
-            1.0f,
-            0.22f,
-            0.2f
-        ),
-        // Point light 4
-        LightSource(
-            new Transform(glm::vec3(0.0f, 0.0f, -3.0f), glm::identity<glm::quat>(), glm::vec3(0.2f)),
-            pointLightColors[3] * 0.1f,
-            pointLightColors[3],
-            pointLightColors[3],
-            1.0f,
-            0.14f,
-            0.07f
-        ),
-        // Spot light
-        LightSource(
-            window.getActiveCamera()->transform,
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(1.0f, 1.0f, 1.0f),
-            glm::vec3(1.0f, 1.0f, 1.0f),
-            1.0f,
-            0.09f,
-            0.032f,
-            10.0f,
-            15.0f
+            0.0f,
+            10.0f
         )
-        */
     };
 #pragma endregion
     
@@ -254,9 +209,6 @@ int main() {
 
         lightSrcMat.getShader()->use();
         for (i32 i = 0; i < lightSources.size(); i++) {
-            if (i == lightSources.size() - 1)
-                continue;
-            
             lightSrcMat.set<glm::vec3>("color", lightSources[i].diffuse);
             MeshRenderer::draw(mesh, lightSrcMat, *lightSources[i].transform);
         }
