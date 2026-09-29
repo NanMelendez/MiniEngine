@@ -55,6 +55,9 @@ int main() {
     if (!window.init(1920, 1080, "MiniEngine", glm::vec3(0.1f, 0.1f, 0.1f)))
         return 1;
 #pragma endregion
+    UUID uuidTest = UUID::generate();
+    auto uuidComponents = uuidTest.getComponents();
+    std::cout << "UUID: " << uuidTest << " with underlying components " << uuidComponents.first << " and " << uuidComponents.second << '\n';
 
     SkyboxRenderer::initialize();
     

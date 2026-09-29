@@ -2,6 +2,7 @@
 #define __MINIENGINE_INCLUDE__
 
 #include "core/time.hpp"
+#include "core/uuid.hpp"
 #include "loaders/cubemaploader.hpp"
 #include "loaders/shaderloader.hpp"
 #include "loaders/texture2dloader.hpp"
