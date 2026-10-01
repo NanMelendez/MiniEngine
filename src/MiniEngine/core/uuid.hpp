@@ -57,11 +57,11 @@ namespace MiniEngine {
             result[18] = '-';
 
             for (i32 i = 19; i <= 22; i++)
-                result[i] = hexDigits[(high >> (4 * (15 - i + 4))) & 0xF];
+                result[i] = hexDigits[(low >> (4 * (15 - i + 4))) & 0xF];
             result[23] = '-';
 
             for (i32 i = 24; i <= 34; i++)
-                result[i] = hexDigits[(high >> (4 * (15 - i + 20))) & 0xF];
+                result[i] = hexDigits[(low >> (4 * (15 - i + 20))) & 0xF];
             result[35] = low & 0xF;
 
             return result;
