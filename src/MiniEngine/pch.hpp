@@ -1,6 +1,7 @@
 #ifndef __MINIENGINE_HEADERS__
 #define __MINIENGINE_HEADERS__
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <memory>

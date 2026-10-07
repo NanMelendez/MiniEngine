@@ -56,8 +56,12 @@ int main() {
         return 1;
 #pragma endregion
     UUID uuidTest = UUID::generate();
-    auto uuidComponents = uuidTest.getComponents();
-    std::cout << "UUID: " << uuidTest.toString() << " with underlying components " << uuidComponents.first << " (High) and " << uuidComponents.second << " (Low)\n";
+    // auto uuidComponents = uuidTest.getComponents();
+    // std::cout << "UUID: " << uuidTest.toString() << " with underlying components " << uuidComponents.first << " (High) and " << uuidComponents.second << " (Low)\n";
+
+    std::cout << "UUID 1: " << uuidTest.toString() << '\n';
+    UUID uuidFromStr = UUID::fromString(uuidTest.toString());
+    std::cout << "UUID 2: " << uuidFromStr.toString() << '\n';
 
     SkyboxRenderer::initialize();
     

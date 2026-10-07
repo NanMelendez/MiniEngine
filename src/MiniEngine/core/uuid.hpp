@@ -22,6 +22,25 @@ namespace MiniEngine {
             return uuid;
         }
 
+        static UUID fromString(const std::string& str) {
+            UUID uuid;
+            std::string uuidStr = str;
+            uuidStr.erase(std::remove(uuidStr.begin(), uuidStr.end(), '-'), uuidStr.end());
+
+            if (uuidStr.length() != 32) {
+                std::cerr << "Invalid string. Returning invalid UUID." << std::endl;
+                return uuid;
+            }
+            
+            std::string highHex = uuidStr.substr(0, 16);
+            std::string lowHex = uuidStr.substr(16, 16);
+
+            uuid.high = std::stoull(highHex, nullptr, 16);
+            uuid.low = std::stoull(lowHex, nullptr, 16);
+
+            return uuid;
+        }
+
         bool operator==(const UUID& right) const {
             return high == right.high && low == right.low;
         }
@@ -62,7 +81,7 @@ namespace MiniEngine {
 
             for (i32 i = 24; i <= 34; i++)
                 result[i] = hexDigits[(low >> (4 * (15 - i + 20))) & 0xF];
-            result[35] = low & 0xF;
+            result[35] = hexDigits[low & 0xF];
 
             return result;
         }
