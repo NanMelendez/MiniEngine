@@ -111,8 +111,8 @@ namespace MiniEngine {
 
         inline static GeneratorContext genCtx {};
 
-        u64 high;
-        u64 low;
+        u64 high = 0;
+        u64 low = 0;
     };
 }
 
