@@ -85,6 +85,18 @@ namespace MiniEngine {
 
             return result;
         }
+
+        bool isValid() const {
+            return high != 0 || low != 0;
+        }
+
+        bool isNull() const {
+            return high == 0 && low == 0;
+        }
+
+        static UUID null() {
+            return {};
+        }
     
     private:
         struct GeneratorContext {
