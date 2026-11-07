@@ -23,20 +23,19 @@ namespace MiniEngine {
         }
 
         static UUID fromString(const std::string& str) {
-            UUID uuid;
             std::string uuidStr = str;
             uuidStr.erase(std::remove(uuidStr.begin(), uuidStr.end(), '-'), uuidStr.end());
 
-            if (uuidStr.length() != 32) {
-                std::cerr << "Invalid string. Returning invalid UUID." << std::endl;
-                return uuid;
-            }
-            
-            std::string highHex = uuidStr.substr(0, 16);
-            std::string lowHex = uuidStr.substr(16, 16);
+            if (uuidStr.length() != 32)
+                return null();
 
-            uuid.high = std::stoull(highHex, nullptr, 16);
-            uuid.low = std::stoull(lowHex, nullptr, 16);
+            UUID uuid;
+
+            std::from_chars_result resultHigh = std::from_chars(uuidStr.data(), uuidStr.data() + 16, uuid.high, 16);
+            std::from_chars_result resultLow = std::from_chars(uuidStr.data() + 16, uuidStr.data() + 32, uuid.low, 16);
+
+            if (resultHigh.ec != std::errc{} || resultHigh.ptr != uuidStr.data() + 16 || resultLow.ec != std::errc{} || resultLow.ptr != uuidStr.data() + 32)
+                return null();
 
             return uuid;
         }
@@ -58,29 +57,24 @@ namespace MiniEngine {
         }
 
         std::string toString() const {
-            std::string result;
-            result.resize(36);
+            std::string result(36, '-');
 
             static const char hexDigits[] = "0123456789abcdef";
 
             for (i32 i = 0; i <= 7; i++)
                 result[i] = hexDigits[(high >> (4 * (15 - i))) & 0xF];
-            result[8] = '-';
 
             for (i32 i = 9; i <= 12; i++)
-                result[i] = hexDigits[(high >> (4 * (15 - i + 1))) & 0xF];
-            result[13] = '-';
+                result[i] = hexDigits[(high >> (4 * (16 - i))) & 0xF];
 
             for (i32 i = 14; i <= 17; i++)
-                result[i] = hexDigits[(high >> (4 * (15 - i + 2))) & 0xF];
-            result[18] = '-';
+                result[i] = hexDigits[(high >> (4 * (17 - i))) & 0xF];
 
             for (i32 i = 19; i <= 22; i++)
-                result[i] = hexDigits[(low >> (4 * (15 - i + 4))) & 0xF];
-            result[23] = '-';
+                result[i] = hexDigits[(low >> (4 * (34 - i))) & 0xF];
 
             for (i32 i = 24; i <= 34; i++)
-                result[i] = hexDigits[(low >> (4 * (15 - i + 20))) & 0xF];
+                result[i] = hexDigits[(low >> (4 * (35 - i))) & 0xF];
             result[35] = hexDigits[low & 0xF];
 
             return result;

@@ -2,6 +2,7 @@
 #define __MINIENGINE_HEADERS__
 
 #include <algorithm>
+#include <charconv>
 #include <fstream>
 #include <iostream>
 #include <memory>
